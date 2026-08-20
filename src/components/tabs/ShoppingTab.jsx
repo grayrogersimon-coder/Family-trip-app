@@ -3,7 +3,7 @@ import { Check, ChevronDown, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { PALETTE } from '../../lib/palette';
 
-export default function ShoppingTab({ trip, items, families, familyColorMap, canAct, actingMember, prefillGroup, onPrefillConsumed }) {
+export default function ShoppingTab({ trip, items, families, familyColorMap, canAct, actingMember, prefillGroup, onPrefillConsumed, refetch }) {
   const [newItemName, setNewItemName] = useState('');
   const [newItemGroupChoice, setNewItemGroupChoice] = useState('none'); // 'none' | 'new' | <group name>
   const [newGroupName, setNewGroupName] = useState('');
@@ -48,11 +48,16 @@ export default function ShoppingTab({ trip, items, families, familyColorMap, can
     setNewItemName('');
     if (newItemGroupChoice === 'new' && groupName) setNewItemGroupChoice(groupName);
     setNewGroupName('');
+    refetch?.();
   };
 
   const handleToggle = async (item) => {
     const { error: err } = await supabase.from('shopping_items').update({ is_purchased: !item.is_purchased }).eq('id', item.id);
-    if (err) setError(err.message);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    refetch?.();
   };
 
   const handleAssign = async (item, familyId) => {
@@ -60,12 +65,20 @@ export default function ShoppingTab({ trip, items, families, familyColorMap, can
       .from('shopping_items')
       .update({ assigned_to_family_id: familyId === 'unassigned' ? null : familyId })
       .eq('id', item.id);
-    if (err) setError(err.message);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    refetch?.();
   };
 
   const handleDelete = async (item) => {
     const { error: err } = await supabase.from('shopping_items').delete().eq('id', item.id);
-    if (err) setError(err.message);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    refetch?.();
   };
 
   const renderItem = (item) => (

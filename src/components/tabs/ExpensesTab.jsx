@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { PALETTE } from '../../lib/palette';
 import { formatMoney } from '../../lib/tripUtils';
 
-export default function ExpensesTab({ trip, expenses, families, familyColorMap, canAct, actingFamilyId }) {
+export default function ExpensesTab({ trip, expenses, families, familyColorMap, canAct, actingFamilyId, refetch }) {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [paidBy, setPaidBy] = useState(actingFamilyId || families[0]?.id || '');
@@ -33,6 +33,7 @@ export default function ExpensesTab({ trip, expenses, families, familyColorMap, 
     setError(null);
     setDescription('');
     setAmount('');
+    refetch?.();
   };
 
   return (

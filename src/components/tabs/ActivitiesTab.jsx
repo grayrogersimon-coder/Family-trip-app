@@ -13,7 +13,19 @@ const VOTE_OPTIONS = [
   { key: 'no', label: '👎 No', color: PALETTE.coral },
 ];
 
-export default function ActivitiesTab({ trip, activities, votes, suggestions, families, actingMember, canAct, onJumpToShopping }) {
+export default function ActivitiesTab({
+  trip,
+  activities,
+  votes,
+  suggestions,
+  families,
+  actingMember,
+  canAct,
+  onJumpToShopping,
+  refetchActivities,
+  refetchVotes,
+  refetchSuggestions,
+}) {
   const [proposeOpen, setProposeOpen] = useState(false);
   const [suggestOpen, setSuggestOpen] = useState(null);
   const [confirmPrompt, setConfirmPrompt] = useState(null);
@@ -33,6 +45,7 @@ export default function ActivitiesTab({ trip, activities, votes, suggestions, fa
       status: 'proposed',
     });
     if (err) throw err;
+    refetchActivities?.();
   };
 
   const handleConfirmToggle = async (activity) => {
@@ -45,6 +58,7 @@ export default function ActivitiesTab({ trip, activities, votes, suggestions, fa
       setError(err.message);
       return;
     }
+    refetchActivities?.();
     if (nowConfirming) setConfirmPrompt({ ...activity, status: 'confirmed' });
   };
 
@@ -53,13 +67,21 @@ export default function ActivitiesTab({ trip, activities, votes, suggestions, fa
     const existing = votes.find((v) => v.activity_id === activityId && v.member_id === actingMember.id);
     if (existing && existing.vote === choice) {
       const { error: err } = await supabase.from('activity_votes').delete().eq('id', existing.id);
-      if (err) setError(err.message);
+      if (err) {
+        setError(err.message);
+        return;
+      }
+      refetchVotes?.();
       return;
     }
     const { error: err } = await supabase
       .from('activity_votes')
       .upsert({ activity_id: activityId, member_id: actingMember.id, vote: choice }, { onConflict: 'activity_id,member_id' });
-    if (err) setError(err.message);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    refetchVotes?.();
   };
 
   const handleSuggest = async (activityId, suggestedDate) => {
@@ -69,6 +91,7 @@ export default function ActivitiesTab({ trip, activities, votes, suggestions, fa
       suggested_by_family_id: actingMember?.family_id || null,
     });
     if (err) throw err;
+    refetchSuggestions?.();
   };
 
   const handleAdopt = async (suggestion) => {
@@ -80,12 +103,22 @@ export default function ActivitiesTab({ trip, activities, votes, suggestions, fa
       setError(updateErr.message);
       return;
     }
-    await supabase.from('activity_suggestions').delete().eq('id', suggestion.id);
+    refetchActivities?.();
+    const { error: deleteErr } = await supabase.from('activity_suggestions').delete().eq('id', suggestion.id);
+    if (deleteErr) {
+      setError(deleteErr.message);
+      return;
+    }
+    refetchSuggestions?.();
   };
 
   const handleDismiss = async (suggestion) => {
     const { error: err } = await supabase.from('activity_suggestions').delete().eq('id', suggestion.id);
-    if (err) setError(err.message);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    refetchSuggestions?.();
   };
 
   return (

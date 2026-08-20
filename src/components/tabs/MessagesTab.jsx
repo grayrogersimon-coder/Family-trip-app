@@ -4,7 +4,7 @@ import { myMembers, myActingCandidates } from '../../lib/identity';
 import { PALETTE } from '../../lib/palette';
 import { formatClock } from '../../lib/tripUtils';
 
-export default function MessagesTab({ trip, messages, members, familyColorMap, userId, actingMember, canAct }) {
+export default function MessagesTab({ trip, messages, members, familyColorMap, userId, actingMember, canAct, refetch }) {
   const [text, setText] = useState('');
   const [sendAsId, setSendAsId] = useState(actingMember?.id || '');
   const [error, setError] = useState(null);
@@ -41,6 +41,7 @@ export default function MessagesTab({ trip, messages, members, familyColorMap, u
     }
     setError(null);
     setText('');
+    refetch?.();
   };
 
   return (

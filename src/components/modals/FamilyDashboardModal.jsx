@@ -5,7 +5,7 @@ import { PALETTE } from '../../lib/palette';
 import { formatMoney } from '../../lib/tripUtils';
 import ConfirmDangerModal from './ConfirmDangerModal.jsx';
 
-export default function FamilyDashboardModal({ families, familyColorMap, initialFamilyId, shoppingItems, bringingItems, expenses, userId, isTripCreator, onClose }) {
+export default function FamilyDashboardModal({ families, familyColorMap, initialFamilyId, shoppingItems, bringingItems, expenses, userId, isTripCreator, onRemoved, onClose }) {
   const [familyId, setFamilyId] = useState(initialFamilyId || families[0]?.id || '');
   const fam = families.find((f) => f.id === familyId) || families[0];
   const famColor = familyColorMap[fam?.id] || PALETTE.ink;
@@ -26,6 +26,7 @@ export default function FamilyDashboardModal({ families, familyColorMap, initial
       setRemoving(false);
       return;
     }
+    onRemoved?.();
     onClose();
   };
 

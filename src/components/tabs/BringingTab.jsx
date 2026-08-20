@@ -3,7 +3,7 @@ import { Package } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { PALETTE } from '../../lib/palette';
 
-export default function BringingTab({ trip, items, families, familyColorMap, canAct, actingMember }) {
+export default function BringingTab({ trip, items, families, familyColorMap, canAct, actingMember, refetch }) {
   const [name, setName] = useState('');
   const [familyId, setFamilyId] = useState(actingMember?.family_id || families[0]?.id || '');
   const [error, setError] = useState(null);
@@ -22,11 +22,16 @@ export default function BringingTab({ trip, items, families, familyColorMap, can
     }
     setError(null);
     setName('');
+    refetch?.();
   };
 
   const handleReassign = async (item, newFamilyId) => {
     const { error: err } = await supabase.from('bringing_items').update({ family_id: newFamilyId }).eq('id', item.id);
-    if (err) setError(err.message);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    refetch?.();
   };
 
   return (

@@ -20,14 +20,20 @@ Do these two things once, in the Supabase dashboard, before running the app:
    Providers → turn on "Allow anonymous sign-ins." Without this, every
    insert/update in the app will fail RLS (no `auth.uid()` to check against).
 2. **Run the migrations, in order.** Dashboard → SQL Editor → New query →
-   paste in the contents of
-   [`supabase/migrations/0001_app_additions.sql`](./supabase/migrations/0001_app_additions.sql)
-   → Run, then repeat for
-   [`supabase/migrations/0002_delete_trip_and_remove_family.sql`](./supabase/migrations/0002_delete_trip_and_remove_family.sql).
-   Both are additive-only (new columns, new tables, new policies/functions,
-   one new constraint) — nothing existing is renamed or dropped, and both are
-   safe to
-   run again if needed.
+   paste in the contents of each file below → Run, one at a time, in this
+   order:
+   - [`supabase/migrations/0001_app_additions.sql`](./supabase/migrations/0001_app_additions.sql)
+   - [`supabase/migrations/0002_delete_trip_and_remove_family.sql`](./supabase/migrations/0002_delete_trip_and_remove_family.sql)
+   - [`supabase/migrations/0003_enable_realtime.sql`](./supabase/migrations/0003_enable_realtime.sql) —
+     without this one, writes save correctly but nothing ever visibly
+     updates: Supabase doesn't broadcast a table's changes over Realtime
+     until it's explicitly added to the `supabase_realtime` publication, and
+     none of the original tables had been.
+
+   All three are additive-only (new columns, new tables, new
+   policies/functions, one new constraint, or a publication membership
+   change) — nothing existing is renamed or dropped, and all are safe to run
+   again if needed.
 
 ## Local setup
 

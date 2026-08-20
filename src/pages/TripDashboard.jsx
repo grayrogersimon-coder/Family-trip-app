@@ -49,7 +49,7 @@ export default function TripDashboard() {
   }, []);
 
   const { trip, loading: tripLoading } = useTrip(tripId);
-  const { data: families, loading: familiesLoading } = useFamilies(tripId);
+  const { data: families, loading: familiesLoading, refetch: refetchFamilies } = useFamilies(tripId);
   const familyIds = useMemo(() => families.map((f) => f.id), [families]);
   const { data: members, loading: membersLoading } = useMembers(familyIds, !familiesLoading);
 
@@ -243,6 +243,9 @@ export default function TripDashboard() {
           actingMember={actingMember}
           canAct={canAct}
           onJumpToShopping={jumpToShoppingWithGroup}
+          refetchActivities={activitiesData.refetch}
+          refetchVotes={votesData.refetch}
+          refetchSuggestions={suggestionsData.refetch}
         />
       )}
       {tab === 'schedule' && <ScheduleTab trip={trip} activities={activitiesData.data} />}
@@ -256,6 +259,7 @@ export default function TripDashboard() {
           actingMember={actingMember}
           prefillGroup={shoppingPrefillGroup}
           onPrefillConsumed={() => setShoppingPrefillGroup(null)}
+          refetch={shoppingData.refetch}
         />
       )}
       {tab === 'bringing' && (
@@ -266,10 +270,19 @@ export default function TripDashboard() {
           familyColorMap={familyColorMap}
           canAct={canAct}
           actingMember={actingMember}
+          refetch={bringingData.refetch}
         />
       )}
       {tab === 'expenses' && trip.track_expenses && (
-        <ExpensesTab trip={trip} expenses={expensesData.data} families={families} familyColorMap={familyColorMap} canAct={canAct} actingFamilyId={actingMember?.family_id} />
+        <ExpensesTab
+          trip={trip}
+          expenses={expensesData.data}
+          families={families}
+          familyColorMap={familyColorMap}
+          canAct={canAct}
+          actingFamilyId={actingMember?.family_id}
+          refetch={expensesData.refetch}
+        />
       )}
       {tab === 'messages' && (
         <MessagesTab
@@ -277,6 +290,7 @@ export default function TripDashboard() {
           messages={messagesData.data}
           members={members}
           families={families}
+          refetch={messagesData.refetch}
           familyColorMap={familyColorMap}
           userId={userId}
           actingMember={actingMember}
@@ -295,6 +309,7 @@ export default function TripDashboard() {
           expenses={trip.track_expenses ? expensesData.data : null}
           userId={userId}
           isTripCreator={isTripCreator}
+          onRemoved={refetchFamilies}
           onClose={() => setFamilyDashOpen(false)}
         />
       )}
