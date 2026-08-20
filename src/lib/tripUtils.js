@@ -1,0 +1,101 @@
+import { MapPin, Link2, Home, Compass } from 'lucide-react';
+
+export function detectSourceType(url) {
+  const u = (url || '').toLowerCase();
+  if (u.includes('airbnb')) return { type: 'Airbnb', icon: Home };
+  if (u.includes('maps.google') || u.includes('goo.gl/maps') || u.includes('maps.app')) {
+    return { type: 'Google Maps', icon: MapPin };
+  }
+  if (u.includes('booking.com') || u.includes('hotel')) return { type: 'Hotel', icon: Home };
+  if (u.startsWith('http')) return { type: 'Website', icon: Link2 };
+  return { type: 'Location', icon: Compass };
+}
+
+export function extractPlaceName(url) {
+  try {
+    if (!url || !url.startsWith('http')) return url || '';
+    const u = new URL(url);
+    const parts = u.pathname.split('/').filter(Boolean);
+    const guess = parts.find((p) => p.length > 3 && !p.match(/^\d+$/));
+    if (guess) return guess.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    return u.hostname.replace('www.', '');
+  } catch {
+    return url;
+  }
+}
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+// Trip dates are real `date` columns; the prototype's "Day N" labels are
+// derived from trip.start_date rather than stored directly.
+export function dayNumberForDate(trip, dateStr) {
+  if (!trip?.start_date || !dateStr) return null;
+  const start = new Date(`${trip.start_date}T00:00:00`);
+  const d = new Date(`${dateStr}T00:00:00`);
+  return Math.round((d - start) / MS_PER_DAY) + 1;
+}
+
+export function dateForDayNumber(trip, dayNumber) {
+  if (!trip?.start_date || !dayNumber) return null;
+  const start = new Date(`${trip.start_date}T00:00:00`);
+  start.setDate(start.getDate() + (dayNumber - 1));
+  return start.toISOString().slice(0, 10);
+}
+
+export function tripDayCount(trip) {
+  if (!trip?.start_date || !trip?.end_date) return null;
+  const start = new Date(`${trip.start_date}T00:00:00`);
+  const end = new Date(`${trip.end_date}T00:00:00`);
+  return Math.round((end - start) / MS_PER_DAY) + 1;
+}
+
+export function dayLabel(trip, dateStr) {
+  if (!dateStr) return 'Unscheduled';
+  const n = dayNumberForDate(trip, dateStr);
+  if (n) return `Day ${n}`;
+  return new Date(`${dateStr}T00:00:00`).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+// The prototype only offers an AM / PM choice; we map that onto the real
+// `time without time zone` column underneath.
+export const AM_TIME = '09:00:00';
+export const PM_TIME = '15:00:00';
+
+export function periodFromTime(time) {
+  if (!time) return null;
+  const hour = Number(time.slice(0, 2));
+  return hour < 12 ? 'AM' : 'PM';
+}
+
+export function timeForPeriod(period) {
+  if (period === 'AM') return AM_TIME;
+  if (period === 'PM') return PM_TIME;
+  return null;
+}
+
+export function sortActivitiesChronologically(list) {
+  return [...list].sort((a, b) => {
+    if (a.activity_date !== b.activity_date) {
+      if (!a.activity_date) return 1;
+      if (!b.activity_date) return -1;
+      return a.activity_date < b.activity_date ? -1 : 1;
+    }
+    if (a.activity_time !== b.activity_time) {
+      if (!a.activity_time) return 1;
+      if (!b.activity_time) return -1;
+      return a.activity_time < b.activity_time ? -1 : 1;
+    }
+    return 0;
+  });
+}
+
+export function formatMoney(n) {
+  return `$${(Number(n) || 0).toFixed(2)}`;
+}
+
+export function formatClock(iso) {
+  return new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
