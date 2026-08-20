@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, ShoppingBag, Package, DollarSign, MessageCircle, User, Users } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, ShoppingBag, Package, DollarSign, MessageCircle, Trash2, User, Users } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import { useTrip } from '../hooks/useTrip';
 import {
   useFamilies,
@@ -18,6 +19,7 @@ import { PALETTE, familyColor } from '../lib/palette';
 import { detectSourceType, tripDayCount } from '../lib/tripUtils';
 import InviteModal from '../components/modals/InviteModal.jsx';
 import FamilyDashboardModal from '../components/modals/FamilyDashboardModal.jsx';
+import ConfirmDangerModal from '../components/modals/ConfirmDangerModal.jsx';
 import ActivitiesTab from '../components/tabs/ActivitiesTab.jsx';
 import ScheduleTab from '../components/tabs/ScheduleTab.jsx';
 import ShoppingTab from '../components/tabs/ShoppingTab.jsx';
@@ -35,6 +37,9 @@ export default function TripDashboard() {
   const [familyDashOpen, setFamilyDashOpen] = useState(false);
   const [dashFamilyId, setDashFamilyId] = useState(null);
   const [shoppingPrefillGroup, setShoppingPrefillGroup] = useState(null);
+  const [deleteTripOpen, setDeleteTripOpen] = useState(false);
+  const [deletingTrip, setDeletingTrip] = useState(false);
+  const [deleteTripError, setDeleteTripError] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -46,7 +51,7 @@ export default function TripDashboard() {
   const { trip, loading: tripLoading } = useTrip(tripId);
   const { data: families, loading: familiesLoading } = useFamilies(tripId);
   const familyIds = useMemo(() => families.map((f) => f.id), [families]);
-  const { data: members, loading: membersLoading } = useMembers(familyIds);
+  const { data: members, loading: membersLoading } = useMembers(familyIds, !familiesLoading);
 
   const activitiesData = useActivities(tripId);
   const activityIds = useMemo(() => activitiesData.data.map((a) => a.id), [activitiesData.data]);
@@ -102,6 +107,20 @@ export default function TripDashboard() {
     setTab('shopping');
   };
 
+  const isTripCreator = Boolean(userId && trip && trip.created_by === userId);
+
+  const handleDeleteTrip = async () => {
+    setDeletingTrip(true);
+    setDeleteTripError(null);
+    const { error: err } = await supabase.rpc('delete_trip', { p_trip_id: tripId });
+    if (err) {
+      setDeleteTripError(err.message);
+      setDeletingTrip(false);
+      return;
+    }
+    navigate('/', { replace: true });
+  };
+
   if (tripLoading || familiesLoading || membersLoading || !trip) {
     return (
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 20px' }}>
@@ -119,15 +138,29 @@ export default function TripDashboard() {
         >
           <ArrowLeft size={14} /> All trips
         </button>
-        <button
-          onClick={() => openFamilyDashboard(null)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6, background: 'white', border: `1px solid ${PALETTE.sand}`,
-            borderRadius: 20, padding: '7px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', color: PALETTE.ink,
-          }}
-        >
-          <User size={14} /> Family dashboard
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => openFamilyDashboard(null)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6, background: 'white', border: `1px solid ${PALETTE.sand}`,
+              borderRadius: 20, padding: '7px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', color: PALETTE.ink,
+            }}
+          >
+            <User size={14} /> Family dashboard
+          </button>
+          {isTripCreator && (
+            <button
+              onClick={() => setDeleteTripOpen(true)}
+              title="Delete trip"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6, background: 'white', border: `1px solid ${PALETTE.sand}`,
+                borderRadius: 20, padding: '7px 10px', fontSize: 13, fontWeight: 600, cursor: 'pointer', color: PALETTE.coral,
+              }}
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
+        </div>
       </div>
 
       <div style={{ marginBottom: 28 }}>
@@ -260,7 +293,25 @@ export default function TripDashboard() {
           shoppingItems={shoppingData.data}
           bringingItems={bringingData.data}
           expenses={trip.track_expenses ? expensesData.data : null}
+          userId={userId}
+          isTripCreator={isTripCreator}
           onClose={() => setFamilyDashOpen(false)}
+        />
+      )}
+      {deleteTripOpen && (
+        <ConfirmDangerModal
+          title={`Delete "${trip.name}"?`}
+          message="This permanently deletes the trip and everything in it — activities, votes, shopping and bringing lists, expenses, and messages, for every family. This can't be undone."
+          confirmLabel="Delete trip"
+          busy={deletingTrip}
+          error={deleteTripError}
+          onClose={() => {
+            if (!deletingTrip) {
+              setDeleteTripOpen(false);
+              setDeleteTripError(null);
+            }
+          }}
+          onConfirm={handleDeleteTrip}
         />
       )}
     </div>

@@ -10,13 +10,17 @@ export function useFamilies(tripId) {
   });
 }
 
-export function useMembers(familyIds) {
-  // Members are scoped by family_id, not trip_id directly.
+export function useMembers(familyIds, enabled = true) {
+  // Members are scoped by family_id, not trip_id directly. `enabled` lets
+  // callers hold this off until the families list it depends on has
+  // actually finished loading, instead of momentarily resolving to "no
+  // members" while familyIds is still an empty placeholder.
   return useRealtimeListByIn({
     table: 'members',
     column: 'family_id',
     values: familyIds,
     orderBy: { column: 'created_at', ascending: true },
+    enabled,
   });
 }
 
@@ -84,7 +88,7 @@ export function useMessages(tripId) {
 // trip_id column directly. Same refetch-on-change strategy as
 // useRealtimeList, just keyed off an `in (...)` filter instead of `eq`.
 // ---------------------------------------------------------------------
-function useRealtimeListByIn({ table, column, values, select = '*', orderBy }) {
+function useRealtimeListByIn({ table, column, values, select = '*', orderBy, enabled = true }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -92,6 +96,7 @@ function useRealtimeListByIn({ table, column, values, select = '*', orderBy }) {
   const key = sortedValues.join(',');
 
   const fetchAll = useCallback(async () => {
+    if (!enabled) return;
     if (sortedValues.length === 0) {
       setData([]);
       setLoading(false);
@@ -107,15 +112,23 @@ function useRealtimeListByIn({ table, column, values, select = '*', orderBy }) {
     }
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [table, select, column, key, orderBy?.column, orderBy?.ascending]);
+  }, [table, select, column, key, orderBy?.column, orderBy?.ascending, enabled]);
 
   useEffect(() => {
+    // While disabled (e.g. waiting on a parent list to load), stay in a
+    // "loading" state rather than resolving to an empty result — otherwise
+    // callers can briefly see "done loading, zero rows" before the real
+    // fetch (with real ids) has had a chance to run.
+    if (!enabled) {
+      setLoading(true);
+      return;
+    }
     setLoading(true);
     fetchAll();
-  }, [fetchAll]);
+  }, [fetchAll, enabled]);
 
   useEffect(() => {
-    if (sortedValues.length === 0) return;
+    if (!enabled || sortedValues.length === 0) return;
     const channel = supabase
       .channel(`${table}:${column}:in:${key}`)
       .on(
@@ -130,7 +143,7 @@ function useRealtimeListByIn({ table, column, values, select = '*', orderBy }) {
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [table, key, fetchAll]);
+  }, [table, key, enabled, fetchAll]);
 
   return { data, loading, error, refetch: fetchAll };
 }

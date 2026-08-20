@@ -19,10 +19,14 @@ Do these two things once, in the Supabase dashboard, before running the app:
 1. **Enable anonymous sign-ins.** Dashboard → Authentication → Sign In /
    Providers → turn on "Allow anonymous sign-ins." Without this, every
    insert/update in the app will fail RLS (no `auth.uid()` to check against).
-2. **Run the migration.** Dashboard → SQL Editor → New query → paste in the
-   contents of [`supabase/migrations/0001_app_additions.sql`](./supabase/migrations/0001_app_additions.sql)
-   → Run. It's additive-only (new columns, new tables, new policies, one new
-   constraint) — nothing existing is renamed or dropped, and it's safe to
+2. **Run the migrations, in order.** Dashboard → SQL Editor → New query →
+   paste in the contents of
+   [`supabase/migrations/0001_app_additions.sql`](./supabase/migrations/0001_app_additions.sql)
+   → Run, then repeat for
+   [`supabase/migrations/0002_delete_trip_and_remove_family.sql`](./supabase/migrations/0002_delete_trip_and_remove_family.sql).
+   Both are additive-only (new columns, new tables, new policies/functions,
+   one new constraint) — nothing existing is renamed or dropped, and both are
+   safe to
    run again if needed.
 
 ## Local setup
@@ -68,6 +72,25 @@ data access is governed entirely by your RLS policies.
   creating a trip, to set up the creator's own family)
 - `/trip/:tripId` — the trip dashboard (Activities / Schedule / Shopping /
   Bringing / Expenses / Messages tabs)
+
+## Deleting trips / removing families
+
+Both are handled by security-definer Postgres functions (`delete_trip`,
+`remove_family` in `0002_delete_trip_and_remove_family.sql`), not client-side
+deletes, so a multi-table cascade either fully succeeds or fully fails —
+never half-done.
+
+- **Delete trip** — the small trash icon next to "Family dashboard" on the
+  trip dashboard, visible only to the trip's creator. Deletes everything:
+  activities, votes, shopping/bringing lists, expenses, messages, every
+  family and member.
+- **Remove a family** — open Family dashboard, pick the family, "Remove
+  [family] from this trip" at the bottom. Visible to that family's own
+  creator (self-service "leave trip") or the trip's creator. Their chat
+  messages and any activities/confirmations they made stay in the trip's
+  history (just un-attributed); their votes, shopping assignments, and
+  bringing-list items are cleared. Blocked when it's the only family left —
+  delete the trip instead in that case.
 
 ## Realtime
 

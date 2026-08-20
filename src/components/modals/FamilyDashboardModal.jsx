@@ -1,12 +1,33 @@
 import { useState } from 'react';
-import { Check, Package, X } from 'lucide-react';
+import { Check, Package, Trash2, X } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 import { PALETTE } from '../../lib/palette';
 import { formatMoney } from '../../lib/tripUtils';
+import ConfirmDangerModal from './ConfirmDangerModal.jsx';
 
-export default function FamilyDashboardModal({ families, familyColorMap, initialFamilyId, shoppingItems, bringingItems, expenses, onClose }) {
+export default function FamilyDashboardModal({ families, familyColorMap, initialFamilyId, shoppingItems, bringingItems, expenses, userId, isTripCreator, onClose }) {
   const [familyId, setFamilyId] = useState(initialFamilyId || families[0]?.id || '');
   const fam = families.find((f) => f.id === familyId) || families[0];
   const famColor = familyColorMap[fam?.id] || PALETTE.ink;
+
+  const [removeOpen, setRemoveOpen] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState(null);
+
+  const canRemove = Boolean(fam && userId && (fam.created_by === userId || isTripCreator));
+  const onlyFamilyLeft = families.length <= 1;
+
+  const handleRemove = async () => {
+    setRemoving(true);
+    setRemoveError(null);
+    const { error: err } = await supabase.rpc('remove_family', { p_family_id: fam.id });
+    if (err) {
+      setRemoveError(err.message);
+      setRemoving(false);
+      return;
+    }
+    onClose();
+  };
 
   const assignedItems = shoppingItems.filter((s) => s.assigned_to_family_id === fam?.id);
   const bringingForFam = bringingItems.filter((b) => b.family_id === fam?.id);
@@ -80,8 +101,44 @@ export default function FamilyDashboardModal({ families, familyColorMap, initial
               ))}
             </div>
           )}
+
+          {canRemove && (
+            <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${PALETTE.sand}` }}>
+              {onlyFamilyLeft ? (
+                <div style={{ fontSize: 12, color: `${PALETTE.ink}66` }}>
+                  This is the only family on the trip — delete the trip instead if you want to remove it entirely.
+                </div>
+              ) : (
+                <button
+                  onClick={() => setRemoveOpen(true)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none',
+                    color: PALETTE.coral, fontWeight: 600, fontSize: 13, cursor: 'pointer', padding: 0,
+                  }}
+                >
+                  <Trash2 size={14} /> Remove {fam.family_name} from this trip
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
+      {removeOpen && (
+        <ConfirmDangerModal
+          title={`Remove ${fam.family_name}?`}
+          message="They'll be taken off this trip. Their messages and confirmed activities stay in the trip's history, but their shopping assignments, bringing-list items, and votes are cleared."
+          confirmLabel="Remove family"
+          busy={removing}
+          error={removeError}
+          onClose={() => {
+            if (!removing) {
+              setRemoveOpen(false);
+              setRemoveError(null);
+            }
+          }}
+          onConfirm={handleRemove}
+        />
+      )}
     </div>
   );
 }
