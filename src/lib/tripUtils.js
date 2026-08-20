@@ -26,26 +26,49 @@ export function extractPlaceName(url) {
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+// Trip dates are plain calendar dates (a `date` column has no timezone of
+// its own) — all arithmetic on them here goes through UTC-anchored helpers,
+// never `new Date(str)` + `.toISOString()`. That combination parses the
+// string as *local* midnight but formats back in UTC, which silently shifts
+// the date by a day for anyone not in a UTC-negative timezone (e.g. it
+// under-counted a 5-day Australian trip as 4 days). Treating the ISO string
+// as pure Y/M/D and doing the math with Date.UTC/getUTC* sidesteps the
+// local timezone entirely.
+function isoToUTCDate(isoDateStr) {
+  const [y, m, d] = isoDateStr.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d));
+}
+
+function utcDateToISO(date) {
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
+}
+
 // Trip dates are real `date` columns; the prototype's "Day N" labels are
 // derived from trip.start_date rather than stored directly.
 export function dayNumberForDate(trip, dateStr) {
   if (!trip?.start_date || !dateStr) return null;
-  const start = new Date(`${trip.start_date}T00:00:00`);
-  const d = new Date(`${dateStr}T00:00:00`);
+  const start = isoToUTCDate(trip.start_date);
+  const d = isoToUTCDate(dateStr);
   return Math.round((d - start) / MS_PER_DAY) + 1;
 }
 
 export function dateForDayNumber(trip, dayNumber) {
   if (!trip?.start_date || !dayNumber) return null;
-  const start = new Date(`${trip.start_date}T00:00:00`);
-  start.setDate(start.getDate() + (dayNumber - 1));
-  return start.toISOString().slice(0, 10);
+  const start = isoToUTCDate(trip.start_date);
+  start.setUTCDate(start.getUTCDate() + (dayNumber - 1));
+  return utcDateToISO(start);
+}
+
+export function addDaysToISODate(isoDateStr, daysToAdd) {
+  const date = isoToUTCDate(isoDateStr);
+  date.setUTCDate(date.getUTCDate() + daysToAdd);
+  return utcDateToISO(date);
 }
 
 export function tripDayCount(trip) {
   if (!trip?.start_date || !trip?.end_date) return null;
-  const start = new Date(`${trip.start_date}T00:00:00`);
-  const end = new Date(`${trip.end_date}T00:00:00`);
+  const start = isoToUTCDate(trip.start_date);
+  const end = isoToUTCDate(trip.end_date);
   return Math.round((end - start) / MS_PER_DAY) + 1;
 }
 

@@ -4,7 +4,7 @@ import { MapPin, ArrowRight, ArrowLeft, Check, DollarSign, Plane } from 'lucide-
 import { supabase } from '../lib/supabase';
 import { ensureAnonSession, getUserId } from '../lib/identity';
 import { PALETTE } from '../lib/palette';
-import { detectSourceType, extractPlaceName } from '../lib/tripUtils';
+import { addDaysToISODate, detectSourceType, extractPlaceName } from '../lib/tripUtils';
 
 export default function NewTrip() {
   const navigate = useNavigate();
@@ -34,9 +34,7 @@ export default function NewTrip() {
       const days = Number(tripDays);
       let endDate = null;
       if (startDate && days > 0) {
-        const end = new Date(`${startDate}T00:00:00`);
-        end.setDate(end.getDate() + (days - 1));
-        endDate = end.toISOString().slice(0, 10);
+        endDate = addDaysToISODate(startDate, days - 1);
       }
       const { data, error: insertErr } = await supabase
         .from('trips')
