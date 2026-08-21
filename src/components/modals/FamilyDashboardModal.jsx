@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { PALETTE } from '../../lib/palette';
 import { formatMoney } from '../../lib/tripUtils';
 import ConfirmDangerModal from './ConfirmDangerModal.jsx';
+import CopyLinkButton from '../ui/CopyLinkButton.jsx';
 
 export default function FamilyDashboardModal({
   families,
@@ -170,40 +171,47 @@ export default function FamilyDashboardModal({
               <label className="field-label" style={{ marginBottom: 8 }}>Members</label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8 }}>
                 {editMembers.map((m, i) => (
-                  <div key={m.id || `new-${i}`} style={{ display: 'flex', gap: 8, alignItems: 'center', opacity: m.removing ? 0.5 : 1 }}>
-                    <input
-                      value={m.display_name}
-                      onChange={(e) => updateEditMember(i, 'display_name', e.target.value)}
-                      placeholder="Name"
-                      disabled={m.removing}
-                      style={{ flex: 1, minWidth: 0, padding: '9px 12px', fontSize: 14, border: `2px solid ${PALETTE.sand}`, borderRadius: 10, fontFamily: 'inherit' }}
-                    />
-                    <div style={{ display: 'flex', border: `2px solid ${PALETTE.sand}`, borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
-                      <button
-                        type="button"
+                  <div key={m.id || `new-${i}`} style={{ opacity: m.removing ? 0.5 : 1 }}>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <input
+                        value={m.display_name}
+                        onChange={(e) => updateEditMember(i, 'display_name', e.target.value)}
+                        placeholder="Name"
                         disabled={m.removing}
-                        onClick={() => updateEditMember(i, 'role', 'adult')}
-                        style={{ padding: '0 10px', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', background: m.role === 'adult' ? PALETTE.teal : 'white', color: m.role === 'adult' ? 'white' : PALETTE.ink }}
-                      >
-                        Adult
-                      </button>
+                        style={{ flex: 1, minWidth: 0, padding: '9px 12px', fontSize: 14, border: `2px solid ${PALETTE.sand}`, borderRadius: 10, fontFamily: 'inherit' }}
+                      />
+                      <div style={{ display: 'flex', border: `2px solid ${PALETTE.sand}`, borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
+                        <button
+                          type="button"
+                          disabled={m.removing}
+                          onClick={() => updateEditMember(i, 'role', 'adult')}
+                          style={{ padding: '0 10px', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', background: m.role === 'adult' ? PALETTE.teal : 'white', color: m.role === 'adult' ? 'white' : PALETTE.ink }}
+                        >
+                          Adult
+                        </button>
+                        <button
+                          type="button"
+                          disabled={m.removing}
+                          onClick={() => updateEditMember(i, 'role', 'kid')}
+                          style={{ padding: '0 10px', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', background: m.role === 'kid' ? PALETTE.coral : 'white', color: m.role === 'kid' ? 'white' : PALETTE.ink }}
+                        >
+                          Kid
+                        </button>
+                      </div>
                       <button
-                        type="button"
-                        disabled={m.removing}
-                        onClick={() => updateEditMember(i, 'role', 'kid')}
-                        style={{ padding: '0 10px', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', background: m.role === 'kid' ? PALETTE.coral : 'white', color: m.role === 'kid' ? 'white' : PALETTE.ink }}
+                        onClick={() => removeEditMember(i)}
+                        disabled={m.removing || (m.id && existingEditCount <= 1)}
+                        title={m.id && existingEditCount <= 1 ? "Can't remove the last member — remove the whole family instead" : 'Remove'}
+                        style={{ background: 'none', border: 'none', cursor: m.id && existingEditCount <= 1 ? 'not-allowed' : 'pointer', padding: 4, flexShrink: 0, color: `${PALETTE.ink}55`, opacity: m.id && existingEditCount <= 1 ? 0.3 : 1 }}
                       >
-                        Kid
+                        <X size={16} />
                       </button>
                     </div>
-                    <button
-                      onClick={() => removeEditMember(i)}
-                      disabled={m.removing || (m.id && existingEditCount <= 1)}
-                      title={m.id && existingEditCount <= 1 ? "Can't remove the last member — remove the whole family instead" : 'Remove'}
-                      style={{ background: 'none', border: 'none', cursor: m.id && existingEditCount <= 1 ? 'not-allowed' : 'pointer', padding: 4, flexShrink: 0, color: `${PALETTE.ink}55`, opacity: m.id && existingEditCount <= 1 ? 0.3 : 1 }}
-                    >
-                      <X size={16} />
-                    </button>
+                    {m.id && m.role === 'adult' && !m.removing && (
+                      <div style={{ marginTop: 4, marginLeft: 2 }}>
+                        <CopyLinkButton memberId={m.id} label={`Copy ${m.display_name || "their"} link`} />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -228,6 +236,21 @@ export default function FamilyDashboardModal({
             </>
           ) : (
             <>
+              <div style={{ fontSize: 12, fontWeight: 700, color: PALETTE.teal, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
+                Members
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+                {members.filter((m) => m.family_id === fam?.id).map((m) => (
+                  <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, fontSize: 14 }}>
+                    <span>
+                      {m.display_name}
+                      {m.role === 'kid' && <span style={{ fontSize: 11, color: `${PALETTE.ink}66`, marginLeft: 6 }}>(kid)</span>}
+                    </span>
+                    {m.role === 'adult' && <CopyLinkButton memberId={m.id} />}
+                  </div>
+                ))}
+              </div>
+
               {famBalance !== null && (
                 <div style={{ background: PALETTE.cream, borderRadius: 12, padding: 14, marginBottom: 20 }}>
                   <div style={{ fontSize: 11, fontWeight: 700, color: `${PALETTE.ink}77`, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Expenses</div>

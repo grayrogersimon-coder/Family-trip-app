@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Check, KeyRound, Users } from 'lucide-react';
+import { Check, KeyRound, Link2, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { ensureAnonSession, getUserId } from '../lib/identity';
 import { PALETTE } from '../lib/palette';
+import CopyLinkButton from '../components/ui/CopyLinkButton.jsx';
 
 export default function JoinTrip() {
   const { tripId } = useParams();
@@ -24,6 +25,7 @@ export default function JoinTrip() {
   const [otherMembers, setOtherMembers] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [shareMembers, setShareMembers] = useState(null); // set once the family is created, if there are other adults to share links with
 
   // "I've been here before" fields
   const [recoverFirstName, setRecoverFirstName] = useState('');
@@ -87,24 +89,38 @@ export default function JoinTrip() {
         .single();
       if (famErr) throw famErr;
 
-      const memberRows = [
-        {
+      const { error: mainMemErr } = await supabase.from('members').insert({
+        family_id: family.id,
+        user_id: userId,
+        display_name: `${mainFirstName.trim()} ${mainLastName.trim()}`,
+        role: 'adult',
+      });
+      if (mainMemErr) throw mainMemErr;
+
+      const otherRows = otherMembers
+        .filter((m) => m.name.trim())
+        .map((m) => ({
           family_id: family.id,
           user_id: userId,
-          display_name: `${mainFirstName.trim()} ${mainLastName.trim()}`,
-          role: 'adult',
-        },
-        ...otherMembers
-          .filter((m) => m.name.trim())
-          .map((m) => ({
-            family_id: family.id,
-            user_id: userId,
-            display_name: m.name.trim(),
-            role: m.role,
-          })),
-      ];
-      const { error: memErr } = await supabase.from('members').insert(memberRows);
-      if (memErr) throw memErr;
+          display_name: m.name.trim(),
+          role: m.role,
+        }));
+
+      // Everyone in otherRows shares this browser's user_id right now
+      // (whoever filled the form typed them in) -- each adult among them
+      // will need their own link to open the app as themselves later.
+      if (otherRows.length > 0) {
+        const { data: insertedOthers, error: otherMemErr } = await supabase
+          .from('members')
+          .insert(otherRows)
+          .select('id, display_name, role');
+        if (otherMemErr) throw otherMemErr;
+        const otherAdults = (insertedOthers || []).filter((m) => m.role === 'adult');
+        if (otherAdults.length > 0) {
+          setShareMembers(otherAdults);
+          return;
+        }
+      }
 
       navigate(`/trip/${tripId}`);
     } catch (e) {
@@ -154,6 +170,64 @@ export default function JoinTrip() {
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <div style={{ maxWidth: 400, textAlign: 'center' }}>
           <div style={{ fontSize: 14, color: PALETTE.coral }}>{loadError}</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (shareMembers) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <div style={{ maxWidth: 420, width: '100%' }}>
+          <div
+            style={{
+              background: 'white',
+              borderRadius: 18,
+              overflow: 'hidden',
+              boxShadow: '0 20px 60px rgba(27,75,74,0.15)',
+              border: `1px solid ${PALETTE.sand}`,
+            }}
+          >
+            <div style={{ background: PALETTE.teal, padding: '22px 28px' }}>
+              <div style={{ color: PALETTE.sand, fontSize: 12, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+                You're in
+              </div>
+              <h3 className="heading-font" style={{ color: 'white', fontSize: 24, fontWeight: 600, marginTop: 4 }}>
+                Bring the others in too
+              </h3>
+            </div>
+            <div style={{ padding: 28 }}>
+              <p style={{ fontSize: 14, color: `${PALETTE.ink}99`, marginBottom: 20 }}>
+                Send each of these a link — one tap and they're straight into the app as themselves, no forms to fill in.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
+                {shareMembers.map((m) => (
+                  <div
+                    key={m.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 10,
+                      padding: '12px 14px',
+                      background: PALETTE.cream,
+                      borderRadius: 12,
+                    }}
+                  >
+                    <span style={{ fontSize: 14, fontWeight: 600 }}>{m.display_name}</span>
+                    <CopyLinkButton memberId={m.id} label="Copy link" />
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => navigate(`/trip/${tripId}`)}
+                className="btn-primary"
+                style={{ width: '100%', justifyContent: 'center' }}
+              >
+                <Link2 size={16} /> Continue to the trip
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );

@@ -39,6 +39,8 @@ Do these two things once, in the Supabase dashboard, before running the app:
      and rename/re-role/add/remove its members from the Family dashboard
      modal. `members` had no UPDATE policy at all before this, so renaming
      someone or changing adult/kid was silently denied by RLS.
+   - [`supabase/migrations/0007_personal_access_links.sql`](./supabase/migrations/0007_personal_access_links.sql) —
+     gives every adult member a personal, one-tap access link (see below).
 
    All are additive-only (new columns, new tables, new policies/functions, a
    new constraint, or a publication membership change) — nothing existing is
@@ -118,6 +120,42 @@ an existing member's `display_name` from before (e.g. just "Simon") won't
 match on a full "Simon Rogers" recovery attempt unless it's already a full
 name.
 
+## Personal access links (the better way in, for people you've already added)
+
+Name recovery above is a fallback for "I lost my data and don't have a
+link." But there's a much better path for the common case: you're setting
+up your family and adding other adults (a spouse, etc.) who'll use their
+own phone. For that, each adult member gets their own private link —
+`/access/<a random unguessable token>` — that logs that exact device in as
+that exact person instantly, no name typing, no ambiguity, and (unlike a
+name) it's not something another trip member could type in and impersonate
+them with just by being on the trip.
+
+- **Right after creating a family that includes other adults**,
+  `/join/:tripId` shows a "bring the others in too" screen listing each of
+  them with a "Copy link" button — copy it and send it to them however you'd
+  normally message them (text, WhatsApp, etc.). Opening it drops them
+  straight into the trip.
+- **Any time after that**, open Family dashboard → pick the family — every
+  adult member has a "Copy link" next to their name, in both the normal view
+  and while editing.
+- Opening the link (`/access/:token`) calls `claim_member_by_token`, which
+  re-links that member row to whichever browser opened it — same mechanism
+  as name recovery, just addressed by an unguessable token instead of a
+  name, so it also works as a way back in if that person ever loses their
+  local data.
+
+Security note for future changes: `members.access_token` is deliberately
+**never** returned by a plain row select — the existing "trip members can
+view members" policy is trip-wide, not scoped to your own family, so a
+`select('*')` would hand every trip member everyone else's access link.
+It's only ever readable through `get_member_access_token`, which does its
+own authorization check (you can only fetch a link for your own member row,
+a member of a family you created, or any family if you created the trip),
+and the migration also revokes column-level `SELECT` on `access_token` from
+the client-facing roles as a second line of defense. Any new query against
+`members` should keep requesting an explicit column list, not `*`.
+
 ## Routes
 
 - `/` — your trips
@@ -125,6 +163,9 @@ name.
   trip, then sends you to set up your own family)
 - `/join/:tripId` — invite-link landing page (also reused right after
   creating a trip, to set up the creator's own family)
+- `/recover` — "Already on a trip? Get back in" — name-based recovery across
+  every trip at once
+- `/access/:token` — a specific person's personal one-tap access link
 - `/trip/:tripId` — the trip dashboard (Activities / Schedule / Shopping /
   Bringing / Expenses / Messages tabs)
 

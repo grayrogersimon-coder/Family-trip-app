@@ -15,10 +15,16 @@ export function useMembers(familyIds, enabled = true) {
   // callers hold this off until the families list it depends on has
   // actually finished loading, instead of momentarily resolving to "no
   // members" while familyIds is still an empty placeholder.
+  //
+  // select is deliberately an explicit column list, NOT '*': members also
+  // has access_token (each person's personal magic-link credential), and
+  // the SELECT policy here is trip-wide, not scoped to your own family --
+  // '*' would hand every trip member everyone else's access token too.
   return useRealtimeListByIn({
     table: 'members',
     column: 'family_id',
     values: familyIds,
+    select: 'id, family_id, user_id, display_name, role, created_at',
     orderBy: { column: 'created_at', ascending: true },
     enabled,
   });
