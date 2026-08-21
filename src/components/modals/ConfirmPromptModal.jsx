@@ -14,7 +14,7 @@ export default function ConfirmPromptModal({ activity, onClose, onAddItems }) {
         >
           <Check size={22} color="white" />
         </div>
-        <h3 className="fraunces" style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>"{activity.title}" confirmed</h3>
+        <h3 className="heading-font" style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>"{activity.title}" confirmed</h3>
         <p style={{ fontSize: 14, color: `${PALETTE.ink}99`, marginBottom: 22 }}>
           Want to add any items to the Shopping List?
         </p>

@@ -37,7 +37,7 @@ export default function ProposeActivityModal({ trip, onClose, onSubmit }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: PALETTE.teal, fontSize: 12, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>
         <Calendar size={14} /> New activity
       </div>
-      <h3 className="fraunces" style={{ fontSize: 22, fontWeight: 600, marginBottom: 20 }}>Propose something to do</h3>
+      <h3 className="heading-font" style={{ fontSize: 22, fontWeight: 600, marginBottom: 20 }}>Propose something to do</h3>
       <label className="field-label">What's the idea?</label>
       <input
         value={title}

@@ -86,7 +86,7 @@ export default function NewTrip() {
             </span>
           </div>
           <h1
-            className="fraunces"
+            className="heading-font"
             style={{ fontSize: 'clamp(28px, 8vw, 40px)', fontWeight: 600, textAlign: 'center', lineHeight: 1.15, marginBottom: 12 }}
           >
             Where are you
@@ -163,7 +163,7 @@ export default function NewTrip() {
               {source && <source.icon size={14} />}
               {source?.type}
             </div>
-            <h2 className="fraunces" style={{ color: 'white', fontSize: 28, fontWeight: 600, marginTop: 8 }}>
+            <h2 className="heading-font" style={{ color: 'white', fontSize: 28, fontWeight: 600, marginTop: 8 }}>
               {placeName}
             </h2>
           </div>

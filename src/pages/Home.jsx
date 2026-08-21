@@ -67,7 +67,7 @@ export default function Home() {
           Your Trips
         </span>
       </div>
-      <h1 className="fraunces" style={{ fontSize: 34, fontWeight: 600, marginBottom: 28 }}>
+      <h1 className="heading-font" style={{ fontSize: 34, fontWeight: 600, marginBottom: 28 }}>
         Where to next?
       </h1>
 
@@ -174,7 +174,7 @@ export default function Home() {
                       </span>
                     )}
                   </div>
-                  <div className="fraunces" style={{ fontSize: 19, fontWeight: 600 }}>
+                  <div className="heading-font" style={{ fontSize: 19, fontWeight: 600 }}>
                     {t.name}
                   </div>
                   <div style={{ fontSize: 13, color: `${PALETTE.ink}77`, marginTop: 4 }}>

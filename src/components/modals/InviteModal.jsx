@@ -22,7 +22,7 @@ export default function InviteModal({ trip, onClose }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: PALETTE.teal, fontSize: 12, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>
         <Users size={14} /> Invite a family
       </div>
-      <h3 className="fraunces" style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>Bring another family in</h3>
+      <h3 className="heading-font" style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>Bring another family in</h3>
       <p style={{ fontSize: 14, color: `${PALETTE.ink}99`, marginBottom: 20 }}>
         Share this link. Anyone who opens it can join <strong>{trip.name}</strong> and add their own family group.
       </p>

@@ -168,7 +168,7 @@ export default function TripDashboard() {
           {source && <source.icon size={14} />} {source?.type}
           {days > 0 && <span style={{ color: `${PALETTE.ink}66` }}>· {days} day{days !== 1 ? 's' : ''}</span>}
         </div>
-        <h1 className="fraunces" style={{ fontSize: 32, fontWeight: 600 }}>{trip.name}</h1>
+        <h1 className="heading-font" style={{ fontSize: 32, fontWeight: 600 }}>{trip.name}</h1>
         <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
           {families.map((f) => {
             const fam = membersByFamily[f.id] || [];

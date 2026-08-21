@@ -59,7 +59,7 @@ export default function RecoverAccess() {
 
         {!result ? (
           <>
-            <h1 className="fraunces" style={{ fontSize: 'clamp(24px, 7vw, 32px)', fontWeight: 600, textAlign: 'center', lineHeight: 1.15, marginBottom: 12 }}>
+            <h1 className="heading-font" style={{ fontSize: 'clamp(24px, 7vw, 32px)', fontWeight: 600, textAlign: 'center', lineHeight: 1.15, marginBottom: 12 }}>
               What's your name?
             </h1>
             <p style={{ textAlign: 'center', color: `${PALETTE.ink}99`, fontSize: 15, marginBottom: 28 }}>
@@ -97,7 +97,7 @@ export default function RecoverAccess() {
           <>
             {result.claimed.length > 0 ? (
               <>
-                <h1 className="fraunces" style={{ fontSize: 28, fontWeight: 600, textAlign: 'center', marginBottom: 12 }}>
+                <h1 className="heading-font" style={{ fontSize: 28, fontWeight: 600, textAlign: 'center', marginBottom: 12 }}>
                   Welcome back, {firstName.trim()}
                 </h1>
                 <p style={{ textAlign: 'center', color: `${PALETTE.ink}99`, fontSize: 15, marginBottom: 20 }}>

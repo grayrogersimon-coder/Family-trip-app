@@ -54,7 +54,7 @@ export default function FamilyDashboardModal({ families, familyColorMap, initial
           <select
             value={fam?.id || ''}
             onChange={(e) => setFamilyId(e.target.value)}
-            style={{ fontSize: 20, fontWeight: 700, fontFamily: "'Fraunces', serif", background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8, padding: '6px 10px', color: 'white', width: '100%' }}
+            style={{ fontSize: 20, fontWeight: 700, fontFamily: "'Caprasimo', system-ui, sans-serif", background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8, padding: '6px 10px', color: 'white', width: '100%' }}
           >
             {families.map((f) => (
               <option key={f.id} value={f.id} style={{ color: PALETTE.ink }}>{f.family_name}</option>

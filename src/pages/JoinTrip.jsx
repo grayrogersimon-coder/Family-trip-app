@@ -175,7 +175,7 @@ export default function JoinTrip() {
             <div style={{ color: PALETTE.sand, fontSize: 12, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase' }}>
               {asCreator ? 'Almost there' : "You've been invited to"}
             </div>
-            <h3 className="fraunces" style={{ color: 'white', fontSize: 24, fontWeight: 600, marginTop: 4 }}>
+            <h3 className="heading-font" style={{ color: 'white', fontSize: 24, fontWeight: 600, marginTop: 4 }}>
               {trip.name}
             </h3>
           </div>

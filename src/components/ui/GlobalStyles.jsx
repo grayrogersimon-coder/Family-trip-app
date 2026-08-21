@@ -3,10 +3,11 @@ import { PALETTE } from '../../lib/palette';
 export default function GlobalStyles() {
   return (
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;500;600;700&display=swap');
       * { box-sizing: border-box; }
       body { margin: 0; }
-      .fraunces { font-family: 'Fraunces', serif; }
+      button, input, select, textarea { font-family: inherit; }
+      .heading-font { font-family: 'Caprasimo', system-ui, sans-serif; }
       .btn-primary {
         background: ${PALETTE.coral}; color: white; border: none; border-radius: 10px;
         padding: 14px 28px; font-weight: 600; font-size: 15px; cursor: pointer;

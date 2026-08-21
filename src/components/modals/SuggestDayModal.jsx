@@ -34,7 +34,7 @@ export default function SuggestDayModal({ trip, onClose, onSubmit }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: PALETTE.teal, fontSize: 12, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>
         <Calendar size={14} /> Suggest a day
       </div>
-      <h3 className="fraunces" style={{ fontSize: 20, fontWeight: 600, marginBottom: 18 }}>Propose a different day for this</h3>
+      <h3 className="heading-font" style={{ fontSize: 20, fontWeight: 600, marginBottom: 18 }}>Propose a different day for this</h3>
       {useDaySelect ? (
         <select value={dayNumber} onChange={(e) => setDayNumber(e.target.value)} className="field-input" style={{ marginBottom: 22, background: 'white' }}>
           <option value="">Pick a day</option>

@@ -40,7 +40,7 @@ export default function ExpensesTab({ trip, expenses, families, familyColorMap, 
     <div>
       <div style={{ background: PALETTE.teal, borderRadius: 14, padding: 20, marginBottom: 18, color: 'white' }}>
         <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', opacity: 0.8, marginBottom: 4 }}>Total trip spend</div>
-        <div className="fraunces" style={{ fontSize: 30, fontWeight: 600, marginBottom: 16 }}>{formatMoney(totalSpent)}</div>
+        <div className="heading-font" style={{ fontSize: 30, fontWeight: 600, marginBottom: 16 }}>{formatMoney(totalSpent)}</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {balances.map((b) => (
             <div key={b.family.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 14 }}>
@@ -102,7 +102,7 @@ export default function ExpensesTab({ trip, expenses, families, familyColorMap, 
                 Paid by {families.find((f) => f.id === e.paid_by_family_id)?.family_name || 'Unknown'}
               </div>
             </div>
-            <div className="fraunces" style={{ fontSize: 17, fontWeight: 600, color: PALETTE.coral }}>{formatMoney(e.amount)}</div>
+            <div className="heading-font" style={{ fontSize: 17, fontWeight: 600, color: PALETTE.coral }}>{formatMoney(e.amount)}</div>
           </div>
         ))}
       </div>

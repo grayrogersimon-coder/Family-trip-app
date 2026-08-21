@@ -14,7 +14,7 @@ export default function ConfirmDangerModal({ title, message, confirmLabel, onCon
         >
           <AlertTriangle size={22} color={PALETTE.coral} />
         </div>
-        <h3 className="fraunces" style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>{title}</h3>
+        <h3 className="heading-font" style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>{title}</h3>
         <p style={{ fontSize: 14, color: `${PALETTE.ink}99`, marginBottom: 22 }}>{message}</p>
         {error && <div style={{ color: PALETTE.coral, fontSize: 13, marginBottom: 14 }}>{error}</div>}
         <div style={{ display: 'flex', gap: 10 }}>

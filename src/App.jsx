@@ -13,7 +13,7 @@ export default function App() {
       style={{
         minHeight: '100vh',
         background: PALETTE.cream,
-        fontFamily: "'Inter', system-ui, sans-serif",
+        fontFamily: "'Figtree', system-ui, sans-serif",
         color: PALETTE.ink,
       }}
     >
