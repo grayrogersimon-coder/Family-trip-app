@@ -4,7 +4,15 @@ import Modal from '../ui/Modal.jsx';
 import { PALETTE } from '../../lib/palette';
 import { tripDayCount, dateForDayNumber } from '../../lib/tripUtils';
 
-export default function ProposeActivityModal({ trip, onClose, onSubmit }) {
+export default function ProposeActivityModal({
+  trip,
+  onClose,
+  onSubmit,
+  eyebrow = 'New activity',
+  heading = 'Propose something to do',
+  submitLabel = 'Propose',
+  submittingLabel = 'Proposing…',
+}) {
   const [title, setTitle] = useState('');
   const [dayNumber, setDayNumber] = useState('');
   const [date, setDate] = useState('');
@@ -35,9 +43,9 @@ export default function ProposeActivityModal({ trip, onClose, onSubmit }) {
   return (
     <Modal onClose={onClose} maxWidth={420} zIndex={50}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: PALETTE.teal, fontSize: 12, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>
-        <Calendar size={14} /> New activity
+        <Calendar size={14} /> {eyebrow}
       </div>
-      <h3 className="heading-font" style={{ fontSize: 22, fontWeight: 600, marginBottom: 20 }}>Propose something to do</h3>
+      <h3 className="heading-font" style={{ fontSize: 22, fontWeight: 600, marginBottom: 20 }}>{heading}</h3>
       <label className="field-label">What's the idea?</label>
       <input
         value={title}
@@ -79,7 +87,7 @@ export default function ProposeActivityModal({ trip, onClose, onSubmit }) {
       <div style={{ display: 'flex', gap: 10 }}>
         <button className="btn-secondary" onClick={onClose}>Cancel</button>
         <button onClick={handleSubmit} className="btn-primary" style={{ flex: 2, justifyContent: 'center' }} disabled={!title.trim() || submitting}>
-          {submitting ? 'Proposing…' : 'Propose'} <Check size={16} />
+          {submitting ? submittingLabel : submitLabel} <Check size={16} />
         </button>
       </div>
     </Modal>

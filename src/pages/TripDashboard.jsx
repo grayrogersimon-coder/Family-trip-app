@@ -14,7 +14,14 @@ import {
   useExpenses,
   useMessages,
 } from '../hooks/tripData';
-import { ensureAnonSession, getUserId, resolveActingMember, myMembers as myMembersFn } from '../lib/identity';
+import {
+  ensureAnonSession,
+  getUserId,
+  resolveActingMember,
+  myMembers as myMembersFn,
+  getLastSeenMessagesAt,
+  setLastSeenMessagesAt,
+} from '../lib/identity';
 import { PALETTE, familyColor } from '../lib/palette';
 import { detectSourceType, tripDayCount } from '../lib/tripUtils';
 import InviteModal from '../components/modals/InviteModal.jsx';
@@ -61,6 +68,33 @@ export default function TripDashboard() {
   const bringingData = useBringingItems(tripId);
   const expensesData = useExpenses(tripId);
   const messagesData = useMessages(tripId);
+
+  const [lastSeenMessagesAt, setLastSeenMessagesAtState] = useState(() => getLastSeenMessagesAt(tripId));
+  const markMessagesSeen = (iso) => {
+    setLastSeenMessagesAt(tripId, iso);
+    setLastSeenMessagesAtState(iso);
+  };
+
+  useEffect(() => {
+    // First time this browser has ever loaded this trip's messages: don't
+    // retroactively flag pre-existing chat history as unread.
+    if (messagesData.loading || lastSeenMessagesAt !== null) return;
+    const latest = messagesData.data[messagesData.data.length - 1];
+    markMessagesSeen(latest ? latest.created_at : new Date().toISOString());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messagesData.loading]);
+
+  useEffect(() => {
+    if (tab !== 'messages' || messagesData.data.length === 0) return;
+    const latest = messagesData.data[messagesData.data.length - 1];
+    if (latest.created_at !== lastSeenMessagesAt) markMessagesSeen(latest.created_at);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, messagesData.data]);
+
+  const latestMessage = messagesData.data[messagesData.data.length - 1];
+  const hasUnreadMessages = Boolean(
+    latestMessage && (!lastSeenMessagesAt || new Date(latestMessage.created_at) > new Date(lastSeenMessagesAt))
+  );
 
   useEffect(() => {
     if (tripLoading || familiesLoading || membersLoading || !userId) return;
@@ -227,8 +261,16 @@ export default function TripDashboard() {
             <DollarSign size={15} /> Expenses
           </button>
         )}
-        <button className={`tab-btn ${tab === 'messages' ? 'active' : ''}`} onClick={() => setTab('messages')}>
+        <button className={`tab-btn ${tab === 'messages' ? 'active' : ''}`} onClick={() => setTab('messages')} style={{ position: 'relative' }}>
           <MessageCircle size={15} /> Messages
+          {hasUnreadMessages && tab !== 'messages' && (
+            <span
+              style={{
+                position: 'absolute', top: 2, right: 2, width: 9, height: 9, borderRadius: '50%',
+                background: PALETTE.coral, border: '2px solid white',
+              }}
+            />
+          )}
         </button>
       </div>
 
@@ -248,7 +290,15 @@ export default function TripDashboard() {
           refetchSuggestions={suggestionsData.refetch}
         />
       )}
-      {tab === 'schedule' && <ScheduleTab trip={trip} activities={activitiesData.data} />}
+      {tab === 'schedule' && (
+        <ScheduleTab
+          trip={trip}
+          activities={activitiesData.data}
+          canAct={canAct}
+          actingMember={actingMember}
+          refetchActivities={activitiesData.refetch}
+        />
+      )}
       {tab === 'shopping' && (
         <ShoppingTab
           trip={trip}

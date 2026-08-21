@@ -62,3 +62,18 @@ export function resolveActingMember(tripId, members, userId) {
   setActingMemberId(tripId, candidates[0].id);
   return candidates[0];
 }
+
+// Tracks, per browser and per trip, the timestamp of the newest message
+// this device has seen — drives the unread-messages dot on the Messages
+// tab. Not synced anywhere; purely a local "have I looked yet" marker.
+function lastSeenMessagesKey(tripId) {
+  return `family-trip:${tripId}:lastSeenMessagesAt`;
+}
+
+export function getLastSeenMessagesAt(tripId) {
+  return localStorage.getItem(lastSeenMessagesKey(tripId));
+}
+
+export function setLastSeenMessagesAt(tripId, iso) {
+  localStorage.setItem(lastSeenMessagesKey(tripId), iso);
+}

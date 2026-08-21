@@ -165,6 +165,15 @@ export default function ShoppingTab({ trip, items, families, familyColorMap, can
               <div style={{ fontSize: 11, color: `${PALETTE.ink}66`, marginTop: 4 }}>
                 Groups bundle related items, like "Taco night" or "Fire pit," under one heading.
               </div>
+              {newItemGroupChoice === 'new' && (
+                <input
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  placeholder="e.g. Taco night, Fire pit"
+                  className="field-input"
+                  style={{ marginTop: 10 }}
+                />
+              )}
             </div>
             <div style={{ flex: 1, minWidth: 150 }}>
               <label className="field-label" style={{ textTransform: 'uppercase', fontSize: 12, letterSpacing: 0.5 }}>Who's buying it?</label>
@@ -177,17 +186,6 @@ export default function ShoppingTab({ trip, items, families, familyColorMap, can
               <div style={{ fontSize: 11, color: `${PALETTE.ink}66`, marginTop: 4 }}>You can always reassign this later.</div>
             </div>
           </div>
-          {newItemGroupChoice === 'new' && (
-            <div style={{ marginBottom: 14 }}>
-              <label className="field-label" style={{ textTransform: 'uppercase', fontSize: 12, letterSpacing: 0.5 }}>New group name</label>
-              <input
-                value={newGroupName}
-                onChange={(e) => setNewGroupName(e.target.value)}
-                placeholder="e.g. Taco night, Fire pit"
-                className="field-input"
-              />
-            </div>
-          )}
           {error && <div style={{ color: PALETTE.coral, fontSize: 13, marginBottom: 10 }}>{error}</div>}
           <button onClick={handleAdd} className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
             Add item
