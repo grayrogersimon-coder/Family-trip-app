@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plane, Plus } from 'lucide-react';
+import { KeyRound, Plane, Plus } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { ensureAnonSession } from '../lib/identity';
 import { PALETTE } from '../lib/palette';
@@ -87,10 +87,32 @@ export default function Home() {
           fontSize: 15,
           fontWeight: 700,
           cursor: 'pointer',
-          marginBottom: 28,
+          marginBottom: 10,
         }}
       >
         <Plus size={18} /> Start a new trip
+      </button>
+
+      <button
+        onClick={() => navigate('/recover')}
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          background: 'white',
+          color: PALETTE.teal,
+          border: `2px solid ${PALETTE.sand}`,
+          borderRadius: 14,
+          padding: '14px',
+          fontSize: 14,
+          fontWeight: 700,
+          cursor: 'pointer',
+          marginBottom: 28,
+        }}
+      >
+        <KeyRound size={16} /> Already on a trip? Get back in
       </button>
 
       {error && (

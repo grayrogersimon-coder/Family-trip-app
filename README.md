@@ -31,6 +31,9 @@ Do these two things once, in the Supabase dashboard, before running the app:
      none of the original tables had been.
    - [`supabase/migrations/0004_name_recovery.sql`](./supabase/migrations/0004_name_recovery.sql) —
      adds the "your name is your login" recovery flow (see below).
+   - [`supabase/migrations/0005_recover_all_trips_by_name.sql`](./supabase/migrations/0005_recover_all_trips_by_name.sql) —
+     the Home-screen "Already on a trip? Get back in" entry point — recovers
+     every trip your name matches in one go, not just one at a time.
 
    All are additive-only (new columns, new tables, new policies/functions, a
    new constraint, or a publication membership change) — nothing existing is
@@ -79,22 +82,31 @@ there, but nothing on the new device is linked to them.
 
 To make that recoverable without adding a real login system: whoever sets
 up a family is asked for their first *and last* name specifically, and
-told plainly that it doubles as their way back in. On `/join/:tripId`,
-"I've been here before" lets someone type that same name again to
-re-link an existing adult member row to their current device
-(`claim_member` in `0004_name_recovery.sql`) — no separate join form,
-no re-adding their family.
+told plainly that it doubles as their way back in. Two ways to use it:
+
+- **`/join/:tripId`, "I've been here before"** — if they still have (or
+  are re-clicking) that trip's invite link, typing their name re-links an
+  existing adult member row to their current device
+  (`claim_member` in `0004_name_recovery.sql`).
+- **Home screen, "Already on a trip? Get back in"** (`/recover`) — no
+  link needed at all. Typing a name searches every trip in the app and
+  re-links every one it can match unambiguously in a single pass
+  (`claim_all_by_name` in `0005_recover_all_trips_by_name.sql`), then drops
+  them on Home, which now shows all of them. If a trip has two different
+  adults who happen to share that exact name, that one trip is deliberately
+  left alone rather than guessing, and reported back plainly.
 
 This is deliberately **not real security** — worth being clear-eyed about
 for future changes: a first+last name isn't a secret among people already
 coordinating a trip together, so this only stops accidental mix-ups, not
 someone who deliberately types another trip member's name to act as them.
-That trade-off is intentional for this app's actual use case (friends/family,
-already-trusted trip members, no adversarial users) — reconsider it before
-reusing this pattern anywhere with real stakes. Only adults are
-claimable this way (kids can't act in the app regardless); if two adults on
-the same trip happen to share an exact name, recovery reports the clash
-rather than guessing which one to reconnect.
+The Home-screen path goes a step further than the per-trip one: it doesn't
+require ever having had that trip's invite link at all, just a name that
+happens to match — a slightly wider surface than "you need the link and
+the name." Both trade-offs are intentional for this app's actual use case
+(friends/family, already-trusted trip members, no adversarial users) —
+reconsider before reusing this pattern anywhere with real stakes. Only
+adults are claimable this way, since kids can't act in the app regardless.
 
 Also: this only helps for families created *after* this feature shipped —
 an existing member's `display_name` from before (e.g. just "Simon") won't

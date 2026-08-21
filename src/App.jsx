@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home.jsx';
 import NewTrip from './pages/NewTrip.jsx';
 import JoinTrip from './pages/JoinTrip.jsx';
+import RecoverAccess from './pages/RecoverAccess.jsx';
 import TripDashboard from './pages/TripDashboard.jsx';
 import GlobalStyles from './components/ui/GlobalStyles.jsx';
 import { PALETTE } from './lib/palette';
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/new" element={<NewTrip />} />
           <Route path="/join/:tripId" element={<JoinTrip />} />
+          <Route path="/recover" element={<RecoverAccess />} />
           <Route path="/trip/:tripId" element={<TripDashboard />} />
           <Route path="*" element={<Home />} />
         </Routes>
