@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Clock, Plus } from 'lucide-react';
+import { Clock, Pencil, Plus, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { PALETTE } from '../../lib/palette';
 import { sortActivitiesChronologically, dayLabel, periodFromTime, timeForPeriod } from '../../lib/tripUtils';
@@ -7,6 +7,8 @@ import ProposeActivityModal from '../modals/ProposeActivityModal.jsx';
 
 export default function ScheduleTab({ trip, activities, canAct, actingMember, refetchActivities }) {
   const [addOpen, setAddOpen] = useState(false);
+  const [editingActivity, setEditingActivity] = useState(null);
+  const [error, setError] = useState(null);
   const confirmed = sortActivitiesChronologically(activities.filter((a) => a.status === 'confirmed'));
 
   const handleAdd = async ({ title, activityDate, period }) => {
@@ -22,6 +24,24 @@ export default function ScheduleTab({ trip, activities, canAct, actingMember, re
     refetchActivities?.();
   };
 
+  const handleEdit = async ({ title, activityDate, period }) => {
+    const { error: err } = await supabase
+      .from('activities')
+      .update({ title, activity_date: activityDate, activity_time: timeForPeriod(period) })
+      .eq('id', editingActivity.id);
+    if (err) throw err;
+    refetchActivities?.();
+  };
+
+  const handleRemoveFromSchedule = async (activity) => {
+    const { error: err } = await supabase.from('activities').update({ status: 'proposed' }).eq('id', activity.id);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    refetchActivities?.();
+  };
+
   const addButton = canAct && (
     <button
       onClick={() => setAddOpen(true)}
@@ -34,16 +54,34 @@ export default function ScheduleTab({ trip, activities, canAct, actingMember, re
     </button>
   );
 
-  const modal = addOpen && (
-    <ProposeActivityModal
-      trip={trip}
-      onClose={() => setAddOpen(false)}
-      onSubmit={handleAdd}
-      eyebrow="Add to schedule"
-      heading="Add something to the schedule"
-      submitLabel="Add"
-      submittingLabel="Adding…"
-    />
+  const modals = (
+    <>
+      {addOpen && (
+        <ProposeActivityModal
+          trip={trip}
+          onClose={() => setAddOpen(false)}
+          onSubmit={handleAdd}
+          eyebrow="Add to schedule"
+          heading="Add something to the schedule"
+          submitLabel="Add"
+          submittingLabel="Adding…"
+        />
+      )}
+      {editingActivity && (
+        <ProposeActivityModal
+          trip={trip}
+          onClose={() => setEditingActivity(null)}
+          onSubmit={handleEdit}
+          eyebrow="Edit schedule item"
+          heading="Edit this"
+          submitLabel="Save"
+          submittingLabel="Saving…"
+          initialTitle={editingActivity.title}
+          initialActivityDate={editingActivity.activity_date}
+          initialPeriod={periodFromTime(editingActivity.activity_time)}
+        />
+      )}
+    </>
   );
 
   if (confirmed.length === 0) {
@@ -56,7 +94,7 @@ export default function ScheduleTab({ trip, activities, canAct, actingMember, re
             Nothing on the schedule yet. Confirm a proposed activity, or add something directly above.
           </div>
         </div>
-        {modal}
+        {modals}
       </div>
     );
   }
@@ -75,6 +113,7 @@ export default function ScheduleTab({ trip, activities, canAct, actingMember, re
   return (
     <div>
       {addButton && <div style={{ marginBottom: 16 }}>{addButton}</div>}
+      {error && <div style={{ color: PALETTE.coral, fontSize: 13, marginBottom: 12 }}>{error}</div>}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
         {order.map((label) => (
           <div key={label}>
@@ -96,7 +135,25 @@ export default function ScheduleTab({ trip, activities, canAct, actingMember, re
                     >
                       {period || '—'}
                     </span>
-                    <span style={{ fontSize: 14, fontWeight: 600 }}>{a.title}</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, flex: 1, minWidth: 0 }}>{a.title}</span>
+                    {canAct && (
+                      <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
+                        <button
+                          onClick={() => setEditingActivity(a)}
+                          title="Edit"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 5, color: `${PALETTE.ink}66`, display: 'flex' }}
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleRemoveFromSchedule(a)}
+                          title="Remove from schedule (moves back to Activities as unconfirmed)"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 5, color: `${PALETTE.ink}66`, display: 'flex' }}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -104,7 +161,7 @@ export default function ScheduleTab({ trip, activities, canAct, actingMember, re
           </div>
         ))}
       </div>
-      {modal}
+      {modals}
     </div>
   );
 }

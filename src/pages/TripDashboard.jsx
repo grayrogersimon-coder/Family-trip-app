@@ -40,6 +40,7 @@ export default function TripDashboard() {
 
   const [userId, setUserId] = useState(null);
   const [tab, setTab] = useState('activities');
+  const [showAddress, setShowAddress] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [familyDashOpen, setFamilyDashOpen] = useState(false);
   const [dashFamilyId, setDashFamilyId] = useState(null);
@@ -198,10 +199,27 @@ export default function TripDashboard() {
       </div>
 
       <div style={{ marginBottom: 28 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: PALETTE.coral, fontSize: 12, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>
+        <div
+          onClick={() => trip.location_source_url && setShowAddress((v) => !v)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8, color: PALETTE.coral, fontSize: 12, fontWeight: 700,
+            letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6,
+            cursor: trip.location_source_url ? 'pointer' : 'default', width: 'fit-content',
+          }}
+        >
           {source && <source.icon size={14} />} {source?.type}
           {days > 0 && <span style={{ color: `${PALETTE.ink}66` }}>· {days} day{days !== 1 ? 's' : ''}</span>}
         </div>
+        {showAddress && trip.location_source_url && (
+          <div
+            style={{
+              background: PALETTE.cream, borderRadius: 10, padding: '10px 14px', marginBottom: 10,
+              fontSize: 13, color: `${PALETTE.ink}99`, wordBreak: 'break-all',
+            }}
+          >
+            {trip.location_source_url}
+          </div>
+        )}
         <h1 className="heading-font" style={{ fontSize: 32, fontWeight: 600 }}>{trip.name}</h1>
         <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
           {families.map((f) => {

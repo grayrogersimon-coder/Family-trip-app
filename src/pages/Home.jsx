@@ -90,7 +90,7 @@ export default function Home() {
           marginBottom: 10,
         }}
       >
-        <Plus size={18} /> Start a new trip
+        <Plus size={18} /> Add your trip
       </button>
 
       <button

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Calendar, Check } from 'lucide-react';
 import Modal from '../ui/Modal.jsx';
 import { PALETTE } from '../../lib/palette';
-import { tripDayCount, dateForDayNumber } from '../../lib/tripUtils';
+import { tripDayCount, dateForDayNumber, dayNumberForDate } from '../../lib/tripUtils';
 
 export default function ProposeActivityModal({
   trip,
@@ -12,16 +12,21 @@ export default function ProposeActivityModal({
   heading = 'Propose something to do',
   submitLabel = 'Propose',
   submittingLabel = 'Proposing…',
+  initialTitle = '',
+  initialActivityDate = null,
+  initialPeriod = null,
 }) {
-  const [title, setTitle] = useState('');
-  const [dayNumber, setDayNumber] = useState('');
-  const [date, setDate] = useState('');
-  const [period, setPeriod] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-
   const days = tripDayCount(trip);
   const useDaySelect = Boolean(trip.start_date && days > 0);
+
+  const [title, setTitle] = useState(initialTitle);
+  const [dayNumber, setDayNumber] = useState(() =>
+    useDaySelect && initialActivityDate ? String(dayNumberForDate(trip, initialActivityDate) || '') : ''
+  );
+  const [date, setDate] = useState(() => (!useDaySelect && initialActivityDate ? initialActivityDate : ''));
+  const [period, setPeriod] = useState(initialPeriod);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleSubmit = async () => {
     if (!title.trim()) return;
