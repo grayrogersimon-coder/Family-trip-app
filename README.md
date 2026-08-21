@@ -29,11 +29,12 @@ Do these two things once, in the Supabase dashboard, before running the app:
      updates: Supabase doesn't broadcast a table's changes over Realtime
      until it's explicitly added to the `supabase_realtime` publication, and
      none of the original tables had been.
+   - [`supabase/migrations/0004_name_recovery.sql`](./supabase/migrations/0004_name_recovery.sql) —
+     adds the "your name is your login" recovery flow (see below).
 
-   All three are additive-only (new columns, new tables, new
-   policies/functions, one new constraint, or a publication membership
-   change) — nothing existing is renamed or dropped, and all are safe to run
-   again if needed.
+   All are additive-only (new columns, new tables, new policies/functions, a
+   new constraint, or a publication membership change) — nothing existing is
+   renamed or dropped, and all are safe to run again if needed.
 
 ## Local setup
 
@@ -68,6 +69,37 @@ data access is governed entirely by your RLS policies.
 - Which of your own adult members you're currently "acting as" is
   remembered per trip in `localStorage`; the Messages tab lets you switch
   between them if your browser added more than one adult.
+
+## Getting back in after losing local data ("name recovery")
+
+Because there's no username/password, losing your browser's saved data
+(clearing site data, a new phone, a different browser) normally means the
+app no longer recognizes you — your messages/votes/etc. are all still
+there, but nothing on the new device is linked to them.
+
+To make that recoverable without adding a real login system: whoever sets
+up a family is asked for their first *and last* name specifically, and
+told plainly that it doubles as their way back in. On `/join/:tripId`,
+"I've been here before" lets someone type that same name again to
+re-link an existing adult member row to their current device
+(`claim_member` in `0004_name_recovery.sql`) — no separate join form,
+no re-adding their family.
+
+This is deliberately **not real security** — worth being clear-eyed about
+for future changes: a first+last name isn't a secret among people already
+coordinating a trip together, so this only stops accidental mix-ups, not
+someone who deliberately types another trip member's name to act as them.
+That trade-off is intentional for this app's actual use case (friends/family,
+already-trusted trip members, no adversarial users) — reconsider it before
+reusing this pattern anywhere with real stakes. Only adults are
+claimable this way (kids can't act in the app regardless); if two adults on
+the same trip happen to share an exact name, recovery reports the clash
+rather than guessing which one to reconnect.
+
+Also: this only helps for families created *after* this feature shipped —
+an existing member's `display_name` from before (e.g. just "Simon") won't
+match on a full "Simon Rogers" recovery attempt unless it's already a full
+name.
 
 ## Routes
 
