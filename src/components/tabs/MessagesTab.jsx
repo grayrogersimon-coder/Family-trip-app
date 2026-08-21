@@ -97,9 +97,9 @@ export default function MessagesTab({ trip, messages, members, familyColorMap, u
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Message the group..."
-              style={{ flex: 1, padding: '10px 14px', borderRadius: 10, border: `1px solid ${PALETTE.sand}`, fontFamily: 'inherit', fontSize: 14 }}
+              style={{ flex: 1, minWidth: 0, padding: '10px 14px', borderRadius: 10, border: `1px solid ${PALETTE.sand}`, fontFamily: 'inherit', fontSize: 14 }}
             />
-            <button onClick={handleSend} className="btn-primary" style={{ padding: '10px 18px' }}>Send</button>
+            <button onClick={handleSend} className="btn-primary" style={{ flexShrink: 0, padding: '10px 14px' }}>Send</button>
           </div>
         ) : (
           <div style={{ fontSize: 12, color: `${PALETTE.ink}66`, textAlign: 'center' }}>Only adults can send messages.</div>

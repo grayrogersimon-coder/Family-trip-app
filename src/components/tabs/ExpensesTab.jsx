@@ -66,27 +66,27 @@ export default function ExpensesTab({ trip, expenses, families, familyColorMap, 
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What was it for?"
-              style={{ flex: 2, padding: '10px 14px', borderRadius: 10, border: `2px solid ${PALETTE.sand}`, fontFamily: 'inherit', fontSize: 14 }}
+              style={{ flex: 2, minWidth: 0, padding: '10px 14px', borderRadius: 10, border: `2px solid ${PALETTE.sand}`, fontFamily: 'inherit', fontSize: 14 }}
             />
             <input
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               type="number"
               placeholder="$"
-              style={{ flex: 1, padding: '10px 14px', borderRadius: 10, border: `2px solid ${PALETTE.sand}`, fontFamily: 'inherit', fontSize: 14 }}
+              style={{ flex: 1, minWidth: 0, padding: '10px 14px', borderRadius: 10, border: `2px solid ${PALETTE.sand}`, fontFamily: 'inherit', fontSize: 14 }}
             />
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <select
               value={paidBy}
               onChange={(e) => setPaidBy(e.target.value)}
-              style={{ flex: 1, padding: '10px 14px', borderRadius: 10, border: `2px solid ${PALETTE.sand}`, fontFamily: 'inherit', fontSize: 14, background: 'white' }}
+              style={{ flex: 1, minWidth: 0, padding: '10px 14px', borderRadius: 10, border: `2px solid ${PALETTE.sand}`, fontFamily: 'inherit', fontSize: 14, background: 'white' }}
             >
               {families.map((f) => (
                 <option key={f.id} value={f.id}>{f.family_name} paid</option>
               ))}
             </select>
-            <button onClick={handleAdd} className="btn-primary" style={{ padding: '10px 18px' }}>Add</button>
+            <button onClick={handleAdd} className="btn-primary" style={{ flexShrink: 0, padding: '10px 14px' }}>Add</button>
           </div>
           {error && <div style={{ color: PALETTE.coral, fontSize: 13, marginTop: 8 }}>{error}</div>}
         </div>
