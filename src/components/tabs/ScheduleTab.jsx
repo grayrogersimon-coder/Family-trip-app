@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Clock, Pencil, Plus, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { PALETTE } from '../../lib/palette';
-import { sortActivitiesChronologically, dayLabel, periodFromTime, timeForPeriod } from '../../lib/tripUtils';
+import { sortActivitiesChronologically, dayLabel, periodFromTime, formatTimeOfDay } from '../../lib/tripUtils';
 import ProposeActivityModal from '../modals/ProposeActivityModal.jsx';
 
 export default function ScheduleTab({ trip, activities, canAct, actingMember, refetchActivities }) {
@@ -11,12 +11,12 @@ export default function ScheduleTab({ trip, activities, canAct, actingMember, re
   const [error, setError] = useState(null);
   const confirmed = sortActivitiesChronologically(activities.filter((a) => a.status === 'confirmed'));
 
-  const handleAdd = async ({ title, activityDate, period }) => {
+  const handleAdd = async ({ title, activityDate, activityTime }) => {
     const { error: err } = await supabase.from('activities').insert({
       trip_id: trip.id,
       title,
       activity_date: activityDate,
-      activity_time: timeForPeriod(period),
+      activity_time: activityTime,
       proposed_by: actingMember?.id || null,
       status: 'confirmed',
     });
@@ -24,10 +24,10 @@ export default function ScheduleTab({ trip, activities, canAct, actingMember, re
     refetchActivities?.();
   };
 
-  const handleEdit = async ({ title, activityDate, period }) => {
+  const handleEdit = async ({ title, activityDate, activityTime }) => {
     const { error: err } = await supabase
       .from('activities')
-      .update({ title, activity_date: activityDate, activity_time: timeForPeriod(period) })
+      .update({ title, activity_date: activityDate, activity_time: activityTime })
       .eq('id', editingActivity.id);
     if (err) throw err;
     refetchActivities?.();
@@ -78,7 +78,7 @@ export default function ScheduleTab({ trip, activities, canAct, actingMember, re
           submittingLabel="Saving…"
           initialTitle={editingActivity.title}
           initialActivityDate={editingActivity.activity_date}
-          initialPeriod={periodFromTime(editingActivity.activity_time)}
+          initialTime={editingActivity.activity_time}
         />
       )}
     </>
@@ -124,16 +124,17 @@ export default function ScheduleTab({ trip, activities, canAct, actingMember, re
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 4, borderLeft: `2px solid ${PALETTE.sand}`, paddingLeft: 18 }}>
               {byLabel[label].map((a) => {
                 const period = periodFromTime(a.activity_time);
+                const timeLabel = formatTimeOfDay(a.activity_time);
                 return (
                   <div key={a.id} style={{ background: 'white', border: `1px solid ${PALETTE.sand}`, borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
                     <span
                       style={{
                         fontSize: 11, fontWeight: 700, color: 'white',
                         background: period === 'AM' ? PALETTE.coral : period === 'PM' ? PALETTE.teal : `${PALETTE.ink}55`,
-                        padding: '4px 9px', borderRadius: 20, flexShrink: 0, minWidth: 32, textAlign: 'center',
+                        padding: '4px 9px', borderRadius: 20, flexShrink: 0, minWidth: 32, textAlign: 'center', whiteSpace: 'nowrap',
                       }}
                     >
-                      {period || '—'}
+                      {timeLabel || '—'}
                     </span>
                     <span style={{ fontSize: 14, fontWeight: 600, flex: 1, minWidth: 0 }}>{a.title}</span>
                     {canAct && (

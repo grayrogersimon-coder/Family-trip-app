@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Calendar, Check } from 'lucide-react';
 import Modal from '../ui/Modal.jsx';
 import { PALETTE } from '../../lib/palette';
-import { tripDayCount, dateForDayNumber, dayNumberForDate } from '../../lib/tripUtils';
+import { tripDayCount, dateForDayNumber, dayNumberForDate, AM_TIME, PM_TIME } from '../../lib/tripUtils';
 
 export default function ProposeActivityModal({
   trip,
@@ -14,7 +14,7 @@ export default function ProposeActivityModal({
   submittingLabel = 'Proposing…',
   initialTitle = '',
   initialActivityDate = null,
-  initialPeriod = null,
+  initialTime = null,
 }) {
   const days = tripDayCount(trip);
   const useDaySelect = Boolean(trip.start_date && days > 0);
@@ -24,7 +24,9 @@ export default function ProposeActivityModal({
     useDaySelect && initialActivityDate ? String(dayNumberForDate(trip, initialActivityDate) || '') : ''
   );
   const [date, setDate] = useState(() => (!useDaySelect && initialActivityDate ? initialActivityDate : ''));
-  const [period, setPeriod] = useState(initialPeriod);
+  // Stored as "HH:MM" (24-hour) to match <input type="time">; AM/PM below
+  // are just quick-pick shortcuts onto this same value.
+  const [time, setTime] = useState(() => (initialTime ? initialTime.slice(0, 5) : ''));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -36,7 +38,7 @@ export default function ProposeActivityModal({
       const activityDate = useDaySelect
         ? (dayNumber ? dateForDayNumber(trip, Number(dayNumber)) : null)
         : (date || null);
-      await onSubmit({ title: title.trim(), activityDate, period });
+      await onSubmit({ title: title.trim(), activityDate, activityTime: time || null });
       onClose();
     } catch (e) {
       setError(e.message || String(e));
@@ -71,23 +73,37 @@ export default function ProposeActivityModal({
         <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="field-input" style={{ marginBottom: 18 }} />
       )}
       <label className="field-label">Time of day (optional)</label>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-        {['AM', 'PM'].map((p) => (
-          <button
-            key={p}
-            type="button"
-            onClick={() => setPeriod(period === p ? null : p)}
-            style={{
-              flex: 1, padding: '11px', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: 13,
-              border: `2px solid ${period === p ? PALETTE.teal : PALETTE.sand}`,
-              background: period === p ? PALETTE.teal : 'white',
-              color: period === p ? 'white' : PALETTE.ink,
-            }}
-          >
-            {p}
-          </button>
-        ))}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+        {[{ p: 'AM', t: AM_TIME }, { p: 'PM', t: PM_TIME }].map(({ p, t }) => {
+          const shortcut = t.slice(0, 5);
+          const active = time === shortcut;
+          return (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setTime(active ? '' : shortcut)}
+              style={{
+                flex: 1, padding: '11px', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: 13,
+                border: `2px solid ${active ? PALETTE.teal : PALETTE.sand}`,
+                background: active ? PALETTE.teal : 'white',
+                color: active ? 'white' : PALETTE.ink,
+              }}
+            >
+              {p}
+            </button>
+          );
+        })}
+        <input
+          type="time"
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
+          className="field-input"
+          style={{ flex: 1.4, minWidth: 0 }}
+        />
       </div>
+      <p style={{ fontSize: 12, color: `${PALETTE.ink}77`, marginTop: -4, marginBottom: 24 }}>
+        Pick AM/PM for a rough time, or set the exact time on the right.
+      </p>
       {error && <div style={{ color: PALETTE.coral, fontSize: 13, marginBottom: 14 }}>{error}</div>}
       <div style={{ display: 'flex', gap: 10 }}>
         <button className="btn-secondary" onClick={onClose}>Cancel</button>

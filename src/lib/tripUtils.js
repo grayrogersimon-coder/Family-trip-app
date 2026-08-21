@@ -82,8 +82,8 @@ export function dayLabel(trip, dateStr) {
   });
 }
 
-// The prototype only offers an AM / PM choice; we map that onto the real
-// `time without time zone` column underneath.
+// AM/PM buttons are quick-pick shortcuts onto the real `time without time
+// zone` column underneath; people can also enter an exact time directly.
 export const AM_TIME = '09:00:00';
 export const PM_TIME = '15:00:00';
 
@@ -93,10 +93,15 @@ export function periodFromTime(time) {
   return hour < 12 ? 'AM' : 'PM';
 }
 
-export function timeForPeriod(period) {
-  if (period === 'AM') return AM_TIME;
-  if (period === 'PM') return PM_TIME;
-  return null;
+// Formats a stored "HH:MM(:SS)" time into a friendly "2:30 PM" for display.
+export function formatTimeOfDay(time) {
+  if (!time) return null;
+  const [hourStr, minuteStr] = time.split(':');
+  const hour = Number(hourStr);
+  const minute = Number(minuteStr);
+  const period = hour < 12 ? 'AM' : 'PM';
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  return `${hour12}:${String(minute).padStart(2, '0')} ${period}`;
 }
 
 export function sortActivitiesChronologically(list) {

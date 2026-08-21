@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Calendar } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { PALETTE } from '../../lib/palette';
-import { sortActivitiesChronologically, dayLabel, periodFromTime, timeForPeriod } from '../../lib/tripUtils';
+import { sortActivitiesChronologically, dayLabel, formatTimeOfDay } from '../../lib/tripUtils';
 import ProposeActivityModal from '../modals/ProposeActivityModal.jsx';
 import SuggestDayModal from '../modals/SuggestDayModal.jsx';
 import ConfirmPromptModal from '../modals/ConfirmPromptModal.jsx';
@@ -35,12 +35,12 @@ export default function ActivitiesTab({
   const suggestionsFor = (activityId) => suggestions.filter((s) => s.activity_id === activityId);
   const familyName = (id) => families.find((f) => f.id === id)?.family_name || 'Someone';
 
-  const handlePropose = async ({ title, activityDate, period }) => {
+  const handlePropose = async ({ title, activityDate, activityTime }) => {
     const { error: err } = await supabase.from('activities').insert({
       trip_id: trip.id,
       title,
       activity_date: activityDate,
-      activity_time: timeForPeriod(period),
+      activity_time: activityTime,
       proposed_by: actingMember?.id || null,
       status: 'proposed',
     });
@@ -150,7 +150,7 @@ export default function ActivitiesTab({
               if (counts[v.vote] !== undefined) counts[v.vote] += 1;
             });
             const myVote = actingMember ? aVotes.find((v) => v.member_id === actingMember.id)?.vote || null : null;
-            const period = periodFromTime(a.activity_time);
+            const timeLabel = formatTimeOfDay(a.activity_time);
             const aSuggestions = suggestionsFor(a.id);
 
             return (
@@ -159,7 +159,7 @@ export default function ActivitiesTab({
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 700, color: PALETTE.coral, textTransform: 'uppercase', letterSpacing: 1 }}>
                       {dayLabel(trip, a.activity_date)}
-                      {period ? ` · ${period}` : ''}
+                      {timeLabel ? ` · ${timeLabel}` : ''}
                     </div>
                     <div style={{ fontSize: 17, fontWeight: 600, marginTop: 4 }}>{a.title}</div>
                   </div>
