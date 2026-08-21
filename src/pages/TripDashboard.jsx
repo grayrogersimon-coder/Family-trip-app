@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, ShoppingBag, Package, DollarSign, MessageCircle, Trash2, User, Users } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Compass, ShoppingBag, Package, DollarSign, MessageCircle, Trash2, User, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTrip } from '../hooks/useTrip';
 import {
@@ -23,7 +23,7 @@ import {
   setLastSeenMessagesAt,
 } from '../lib/identity';
 import { PALETTE, familyColor } from '../lib/palette';
-import { detectSourceType, tripDayCount } from '../lib/tripUtils';
+import { tripDayCount } from '../lib/tripUtils';
 import InviteModal from '../components/modals/InviteModal.jsx';
 import FamilyDashboardModal from '../components/modals/FamilyDashboardModal.jsx';
 import ConfirmDangerModal from '../components/modals/ConfirmDangerModal.jsx';
@@ -40,7 +40,6 @@ export default function TripDashboard() {
 
   const [userId, setUserId] = useState(null);
   const [tab, setTab] = useState('activities');
-  const [showAddress, setShowAddress] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [familyDashOpen, setFamilyDashOpen] = useState(false);
   const [dashFamilyId, setDashFamilyId] = useState(null);
@@ -129,7 +128,6 @@ export default function TripDashboard() {
   const actingMember = userId ? resolveActingMember(tripId, members, userId) : null;
   const canAct = Boolean(actingMember);
 
-  const source = trip ? detectSourceType(trip.location_source_url) : null;
   const days = trip ? tripDayCount(trip) : null;
 
   const openFamilyDashboard = (familyId) => {
@@ -199,25 +197,15 @@ export default function TripDashboard() {
       </div>
 
       <div style={{ marginBottom: 28 }}>
-        <div
-          onClick={() => trip.location_source_url && setShowAddress((v) => !v)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 8, color: PALETTE.coral, fontSize: 12, fontWeight: 700,
-            letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6,
-            cursor: trip.location_source_url ? 'pointer' : 'default', width: 'fit-content',
-          }}
-        >
-          {source && <source.icon size={14} />} {source?.type}
-          {days > 0 && <span style={{ color: `${PALETTE.ink}66` }}>· {days} day{days !== 1 ? 's' : ''}</span>}
-        </div>
-        {showAddress && trip.location_source_url && (
-          <div
-            style={{
-              background: PALETTE.cream, borderRadius: 10, padding: '10px 14px', marginBottom: 10,
-              fontSize: 13, color: `${PALETTE.ink}99`, wordBreak: 'break-all',
-            }}
-          >
-            {trip.location_source_url}
+        {(trip.location_source_url || trip.location_name || days > 0) && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: PALETTE.coral, fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+            {(trip.location_source_url || trip.location_name) && (
+              <>
+                <Compass size={14} style={{ flexShrink: 0 }} />
+                <span style={{ wordBreak: 'break-all' }}>{trip.location_source_url || trip.location_name}</span>
+              </>
+            )}
+            {days > 0 && <span style={{ color: `${PALETTE.ink}66`, fontWeight: 500, flexShrink: 0 }}>· {days} day{days !== 1 ? 's' : ''}</span>}
           </div>
         )}
         <h1 className="heading-font" style={{ fontSize: 32, fontWeight: 600 }}>{trip.name}</h1>
