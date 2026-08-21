@@ -3,11 +3,11 @@ import { PALETTE } from '../../lib/palette';
 export default function GlobalStyles() {
   return (
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;500;600;700&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Figtree:wght@400;500;600;700&display=swap');
       * { box-sizing: border-box; }
       body { margin: 0; }
       button, input, select, textarea { font-family: inherit; }
-      .heading-font { font-family: 'Caprasimo', system-ui, sans-serif; }
+      .heading-font { font-family: 'Fredoka', system-ui, sans-serif; font-weight: 600; }
       .btn-primary {
         background: ${PALETTE.coral}; color: white; border: none; border-radius: 10px;
         padding: 14px 28px; font-weight: 600; font-size: 15px; cursor: pointer;
