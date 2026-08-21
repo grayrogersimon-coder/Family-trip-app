@@ -34,6 +34,11 @@ Do these two things once, in the Supabase dashboard, before running the app:
    - [`supabase/migrations/0005_recover_all_trips_by_name.sql`](./supabase/migrations/0005_recover_all_trips_by_name.sql) —
      the Home-screen "Already on a trip? Get back in" entry point — recovers
      every trip your name matches in one go, not just one at a time.
+   - [`supabase/migrations/0006_edit_family.sql`](./supabase/migrations/0006_edit_family.sql) —
+     lets a family's own creator (or the trip's creator) rename a family
+     and rename/re-role/add/remove its members from the Family dashboard
+     modal. `members` had no UPDATE policy at all before this, so renaming
+     someone or changing adult/kid was silently denied by RLS.
 
    All are additive-only (new columns, new tables, new policies/functions, a
    new constraint, or a publication membership change) — nothing existing is

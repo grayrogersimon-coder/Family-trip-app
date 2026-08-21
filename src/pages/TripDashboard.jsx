@@ -51,7 +51,7 @@ export default function TripDashboard() {
   const { trip, loading: tripLoading } = useTrip(tripId);
   const { data: families, loading: familiesLoading, refetch: refetchFamilies } = useFamilies(tripId);
   const familyIds = useMemo(() => families.map((f) => f.id), [families]);
-  const { data: members, loading: membersLoading } = useMembers(familyIds, !familiesLoading);
+  const { data: members, loading: membersLoading, refetch: refetchMembers } = useMembers(familyIds, !familiesLoading);
 
   const activitiesData = useActivities(tripId);
   const activityIds = useMemo(() => activitiesData.data.map((a) => a.id), [activitiesData.data]);
@@ -302,6 +302,7 @@ export default function TripDashboard() {
       {familyDashOpen && (
         <FamilyDashboardModal
           families={families}
+          members={members}
           familyColorMap={familyColorMap}
           initialFamilyId={dashFamilyId}
           shoppingItems={shoppingData.data}
@@ -310,6 +311,8 @@ export default function TripDashboard() {
           userId={userId}
           isTripCreator={isTripCreator}
           onRemoved={refetchFamilies}
+          onFamiliesChanged={refetchFamilies}
+          onMembersChanged={refetchMembers}
           onClose={() => setFamilyDashOpen(false)}
         />
       )}
