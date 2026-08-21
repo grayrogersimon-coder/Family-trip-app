@@ -63,8 +63,7 @@ export default function RecoverAccess() {
               What's your name?
             </h1>
             <p style={{ textAlign: 'center', color: `${PALETTE.ink}99`, fontSize: 15, marginBottom: 28 }}>
-              If this device has lost its saved data, enter the exact first and last name you joined with — we'll
-              get you back into every trip you're part of.
+              Pop in the name you joined with and we'll take you straight back to your trips.
             </p>
             <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
               <input

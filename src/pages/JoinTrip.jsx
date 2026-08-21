@@ -220,8 +220,7 @@ export default function JoinTrip() {
                   Your first and last name
                 </label>
                 <p style={{ fontSize: 12, color: `${PALETTE.ink}77`, marginBottom: 10 }}>
-                  This is your login — if this device ever loses its saved data, you can get back in by entering
-                  this exact name again from the invite link.
+                  Keep this handy — it's how you'll hop back in later if you ever need to.
                 </p>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
                   <input
@@ -318,7 +317,7 @@ export default function JoinTrip() {
                   Your first and last name
                 </label>
                 <p style={{ fontSize: 12, color: `${PALETTE.ink}77`, marginBottom: 10 }}>
-                  Enter the exact name you joined with and we'll get you back into your spot on this trip.
+                  Pop in your name and we'll get you back to your spot.
                 </p>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
                   <input
