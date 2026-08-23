@@ -27,6 +27,7 @@ import { tripDayCount } from '../lib/tripUtils';
 import InviteModal from '../components/modals/InviteModal.jsx';
 import FamilyDashboardModal from '../components/modals/FamilyDashboardModal.jsx';
 import ConfirmDangerModal from '../components/modals/ConfirmDangerModal.jsx';
+import DirectionsModal from '../components/modals/DirectionsModal.jsx';
 import ActivitiesTab from '../components/tabs/ActivitiesTab.jsx';
 import ScheduleTab from '../components/tabs/ScheduleTab.jsx';
 import ShoppingTab from '../components/tabs/ShoppingTab.jsx';
@@ -47,6 +48,7 @@ export default function TripDashboard() {
   const [deleteTripOpen, setDeleteTripOpen] = useState(false);
   const [deletingTrip, setDeletingTrip] = useState(false);
   const [deleteTripError, setDeleteTripError] = useState(null);
+  const [directionsOpen, setDirectionsOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -200,10 +202,19 @@ export default function TripDashboard() {
         {(trip.location_source_url || trip.location_name || days > 0) && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: PALETTE.coral, fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
             {(trip.location_source_url || trip.location_name) && (
-              <>
+              <button
+                onClick={() => setDirectionsOpen(true)}
+                title="Get directions"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', padding: 0,
+                  cursor: 'pointer', color: 'inherit', font: 'inherit', textAlign: 'left',
+                }}
+              >
                 <Compass size={14} style={{ flexShrink: 0 }} />
-                <span style={{ overflowWrap: 'break-word' }}>{trip.location_source_url || trip.location_name}</span>
-              </>
+                <span style={{ overflowWrap: 'break-word', textDecoration: 'underline', textDecorationColor: `${PALETTE.coral}55` }}>
+                  {trip.location_source_url || trip.location_name}
+                </span>
+              </button>
             )}
             {days > 0 && <span style={{ color: `${PALETTE.ink}66`, fontWeight: 500, flexShrink: 0 }}>· {days} day{days !== 1 ? 's' : ''}</span>}
           </div>
@@ -386,6 +397,12 @@ export default function TripDashboard() {
             }
           }}
           onConfirm={handleDeleteTrip}
+        />
+      )}
+      {directionsOpen && (
+        <DirectionsModal
+          address={trip.location_source_url || trip.location_name}
+          onClose={() => setDirectionsOpen(false)}
         />
       )}
     </div>
