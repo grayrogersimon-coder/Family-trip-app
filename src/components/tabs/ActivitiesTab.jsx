@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, Pencil } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { PALETTE } from '../../lib/palette';
 import { sortActivitiesChronologically, dayLabel, formatTimeOfDay } from '../../lib/tripUtils';
@@ -27,6 +27,7 @@ export default function ActivitiesTab({
   refetchSuggestions,
 }) {
   const [proposeOpen, setProposeOpen] = useState(false);
+  const [editingActivity, setEditingActivity] = useState(null);
   const [suggestOpen, setSuggestOpen] = useState(null);
   const [confirmPrompt, setConfirmPrompt] = useState(null);
   const [error, setError] = useState(null);
@@ -44,6 +45,15 @@ export default function ActivitiesTab({
       proposed_by: actingMember?.id || null,
       status: 'proposed',
     });
+    if (err) throw err;
+    refetchActivities?.();
+  };
+
+  const handleEdit = async ({ title, activityDate, activityTime }) => {
+    const { error: err } = await supabase
+      .from('activities')
+      .update({ title, activity_date: activityDate, activity_time: activityTime })
+      .eq('id', editingActivity.id);
     if (err) throw err;
     refetchActivities?.();
   };
@@ -163,19 +173,30 @@ export default function ActivitiesTab({
                     </div>
                     <div style={{ fontSize: 17, fontWeight: 600, marginTop: 4 }}>{a.title}</div>
                   </div>
-                  <button
-                    onClick={() => handleConfirmToggle(a)}
-                    disabled={!canAct}
-                    style={{
-                      background: a.status === 'confirmed' ? PALETTE.teal : 'white',
-                      color: a.status === 'confirmed' ? 'white' : PALETTE.teal,
-                      border: `1px solid ${PALETTE.teal}`, fontSize: 11, fontWeight: 700,
-                      padding: '4px 10px', borderRadius: 20, cursor: canAct ? 'pointer' : 'not-allowed',
-                      opacity: canAct ? 1 : 0.6, flexShrink: 0,
-                    }}
-                  >
-                    {a.status === 'confirmed' ? 'Confirmed' : 'Confirm'}
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                    {canAct && (
+                      <button
+                        onClick={() => setEditingActivity(a)}
+                        title="Edit"
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 5, color: `${PALETTE.ink}66`, display: 'flex' }}
+                      >
+                        <Pencil size={14} />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleConfirmToggle(a)}
+                      disabled={!canAct}
+                      style={{
+                        background: a.status === 'confirmed' ? PALETTE.teal : 'white',
+                        color: a.status === 'confirmed' ? 'white' : PALETTE.teal,
+                        border: `1px solid ${PALETTE.teal}`, fontSize: 11, fontWeight: 700,
+                        padding: '4px 10px', borderRadius: 20, cursor: canAct ? 'pointer' : 'not-allowed',
+                        opacity: canAct ? 1 : 0.6,
+                      }}
+                    >
+                      {a.status === 'confirmed' ? 'Confirmed' : 'Confirm'}
+                    </button>
+                  </div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
                   {VOTE_OPTIONS.map((opt) => (
@@ -232,6 +253,20 @@ export default function ActivitiesTab({
       )}
 
       {proposeOpen && <ProposeActivityModal trip={trip} onClose={() => setProposeOpen(false)} onSubmit={handlePropose} />}
+      {editingActivity && (
+        <ProposeActivityModal
+          trip={trip}
+          onClose={() => setEditingActivity(null)}
+          onSubmit={handleEdit}
+          eyebrow="Edit activity"
+          heading="Edit this"
+          submitLabel="Save"
+          submittingLabel="Saving…"
+          initialTitle={editingActivity.title}
+          initialActivityDate={editingActivity.activity_date}
+          initialTime={editingActivity.activity_time}
+        />
+      )}
       {suggestOpen && (
         <SuggestDayModal
           trip={trip}
