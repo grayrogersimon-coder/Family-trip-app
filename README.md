@@ -41,6 +41,10 @@ Do these two things once, in the Supabase dashboard, before running the app:
      someone or changing adult/kid was silently denied by RLS.
    - [`supabase/migrations/0007_personal_access_links.sql`](./supabase/migrations/0007_personal_access_links.sql) —
      gives every adult member a personal, one-tap access link (see below).
+   - [`supabase/migrations/0008_bringing_items_delete.sql`](./supabase/migrations/0008_bringing_items_delete.sql) —
+     lets people remove items from the "what we're bringing" list.
+     `bringing_items` had no DELETE policy at all before this (same gap
+     `shopping_items` originally had), so removing was silently denied by RLS.
 
    All are additive-only (new columns, new tables, new policies/functions, a
    new constraint, or a publication membership change) — nothing existing is

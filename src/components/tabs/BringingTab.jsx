@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Package } from 'lucide-react';
+import { Package, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { PALETTE } from '../../lib/palette';
 
@@ -27,6 +27,15 @@ export default function BringingTab({ trip, items, families, familyColorMap, can
 
   const handleReassign = async (item, newFamilyId) => {
     const { error: err } = await supabase.from('bringing_items').update({ family_id: newFamilyId }).eq('id', item.id);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    refetch?.();
+  };
+
+  const handleDelete = async (item) => {
+    const { error: err } = await supabase.from('bringing_items').delete().eq('id', item.id);
     if (err) {
       setError(err.message);
       return;
@@ -76,6 +85,15 @@ export default function BringingTab({ trip, items, families, familyColorMap, can
                   <option key={f.id} value={f.id} style={{ color: PALETTE.ink, background: 'white' }}>{f.family_name}</option>
                 ))}
               </select>
+              {canAct && (
+                <button
+                  onClick={() => handleDelete(item)}
+                  title="Remove item"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, flexShrink: 0, color: `${PALETTE.ink}55`, display: 'flex', alignItems: 'center' }}
+                >
+                  <X size={16} />
+                </button>
+              )}
             </div>
           );
         })}
