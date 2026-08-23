@@ -202,7 +202,7 @@ export default function TripDashboard() {
             {(trip.location_source_url || trip.location_name) && (
               <>
                 <Compass size={14} style={{ flexShrink: 0 }} />
-                <span style={{ wordBreak: 'break-all' }}>{trip.location_source_url || trip.location_name}</span>
+                <span style={{ overflowWrap: 'break-word' }}>{trip.location_source_url || trip.location_name}</span>
               </>
             )}
             {days > 0 && <span style={{ color: `${PALETTE.ink}66`, fontWeight: 500, flexShrink: 0 }}>· {days} day{days !== 1 ? 's' : ''}</span>}
