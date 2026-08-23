@@ -92,14 +92,14 @@ export default function NewTrip() {
 
           <label className="field-label" style={{ marginBottom: 4 }}>Address</label>
           <p style={{ fontSize: 12, color: `${PALETTE.ink}77`, marginBottom: 10 }}>
-            Paste an Airbnb, hotel, or Google Maps link — or just type the address.
+            Enter the address you'll be staying at.
           </p>
           <div style={{ position: 'relative', marginBottom: 6 }}>
             <MapPin size={16} style={{ position: 'absolute', left: 14, top: 14, color: PALETTE.coral }} />
             <input
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="airbnb.com/rooms/... or '12 Reef Rd, Ningaloo WA'"
+              placeholder="12 Reef Rd, Ningaloo WA"
               className="field-input"
               style={{ paddingLeft: 40 }}
             />
